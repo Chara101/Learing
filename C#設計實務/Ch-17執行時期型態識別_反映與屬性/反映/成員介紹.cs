@@ -8,6 +8,7 @@ namespace Learing
 {
     class Example
     {
+        class A { }
         /*
          System.Reflection.MenberInfo是抽象類別
         定義了以下成員:
@@ -32,6 +33,21 @@ namespace Learing
             //type.GetProperties();
             //type.GetEvents();
             //type.GetFields();
+
+            //type.Assembly 取得包含目前類別的組件
+            //type.Attributes 取得目前類別的屬性
+            //type.BaseType 取得目前類別的基底類別
+            //type.FullName 取得目前類別的完整名稱
+            //type.FullName 取得目前類別的名稱
+            //type.IsAbstract 取得值，指出目前的類別是否為抽象的
+            //type.IsClass 取得值，指出目前的類別是否為類別
+            //type.IsEnum 取得值，指出目前的類別是否為列舉
+            //type.IsInterface 取得值，指出目前的類別是否為介面
+            string? temp = typeof(A).Namespace;
+            if(temp is not null)
+            {
+                Console.WriteLine("Namespace: " + temp);
+            }   
         }
     }
 }
