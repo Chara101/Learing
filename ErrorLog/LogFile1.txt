@@ -1,0 +1,2 @@
+﻿2025-03-26 22:54:02.9588|INFO|Learing.Example|Hello world
+2025-03-26 22:55:27.9513|INFO|Learing.Example|Hello world

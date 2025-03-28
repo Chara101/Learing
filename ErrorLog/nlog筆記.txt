@@ -1,0 +1,4 @@
+安裝nlog後，無法使用xml檔設定，但在執行時設定成功，想要比對兩者的差異，所以要先去了解特性
+2025/3/28 8:49pm:
+
+暫定:用程式設定因為直接對nlog本身實作設定，所以可以跑，而xml方式須依賴Microsoft.Extensions.Logging用來build logger，還需要Nlog.Extensions配合才能用
