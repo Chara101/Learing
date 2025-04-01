@@ -441,7 +441,7 @@ def get_driver_by_config(config_dict, driver_type):
             print('oh no not again, WebDriverException')
             print('WebDriverException:', exce2)
         except Exception as exce1:
-            print('get URL Exception:', exec1)
+            print('get URL Exception:', exce1)
             pass
 
     return driver
@@ -4889,9 +4889,10 @@ def play_mp3_async(sound_filename):
     threading.Thread(target=play_mp3, args=(sound_filename,), daemon=True).start()
 
 def play_mp3(sound_filename):
-    from playsound import playsound
+    #from playsound import playsound 
     try:
-        playsound(sound_filename)
+        #playsound(sound_filename)
+        print("play sound:", sound_filename)
     except Exception as exc:
         msg=str(exc)
         print("play sound exeption:", msg)
