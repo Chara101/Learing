@@ -3,11 +3,11 @@
 # 'seleniumwire' and 'selenium 4' raise error when running python 2.x
 # PS: python 2.x will be removed in future.
 #執行方式：python chrome_tixcraft.py 或 python3 chrome_tixcraft.py
-import os
-import sys
-import platform
-import json
-import random
+import os #電腦檔案的各種操作
+import sys #系統相關的操作
+import platform #系統相關的操作
+import json #讀取使用轉換json檔案
+import random #隨機數
 
 from selenium import webdriver
 # for close tab.

@@ -9,7 +9,7 @@ test.pack(side = tk.BOTTOM)
 try:
     window.mainloop()
 except:
-    print("Error: Mainloop failed to run.")3
+    print("Error: Mainloop failed to run.")
 
 
 
