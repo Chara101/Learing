@@ -9,7 +9,7 @@ import platform #系統相關的操作
 import json #讀取使用轉換json檔案
 import random #隨機數
 
-from selenium import webdriver
+from selenium import webdriver #瀏覽器自動化
 # for close tab.
 from selenium.common.exceptions import NoSuchWindowException
 from selenium.common.exceptions import UnexpectedAlertPresentException
@@ -25,15 +25,15 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 # for wait #1
-import time
-import re
-from datetime import datetime
+import time #秒數擷取處理
+import re #找尋字符
+from datetime import datetime #日期與時間格式化
 # for error output
-import logging
+import logging #日誌輸出
 logging.basicConfig()
 logger = logging.getLogger('logger')
 # for check reg_info
-import requests
+import requests #網路內容請求
 import warnings
 from urllib3.exceptions import InsecureRequestWarning
 warnings.simplefilter('ignore',InsecureRequestWarning)

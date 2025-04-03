@@ -1,0 +1,2 @@
+2025-04-03 10:50:03,605 - DEBUG - This is a debug message
+2025-04-03 10:50:03,606 - INFO - This is an info message
