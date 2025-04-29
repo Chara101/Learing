@@ -6,11 +6,12 @@
     <title>Buttom time!!</title>
 </head>
 <body>
-    <button id="B1" onclick="">Click me!</button>
-    <p id="respond"></p>
+    <button id="B1" onclick="IfClick()">Click me!</button>
+    <p id="respond">here</p>
     <script>
         function IfClick(){
             document.getElementById("respond").innerText = "You clicked the button!";
+            alert("You clicked the button!");
         }
     </script>
 </body>
