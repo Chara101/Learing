@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--<meta http-equiv="refresh" content="5; url=https://example.com">用於重新導向-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>計數器</title>
+</head>
+<body>
+    <button onclick="Count()">按我~</button>
+    <p id="r">0</p>
+    <p>這是你第</p><p id="r100">0</p><p>次到100</p>
+    <script>
+        let count = 0;
+        let count100 = 0;
+        function Count(){
+            count++;
+            document.getElementById("r").innerText = count;
+            if(count >= 100){
+                count /= 100;
+                count100++;
+                document.getElementById("r100").innerText = count100;
+            }
+        }
+    </script>
+</body>
+</html>
