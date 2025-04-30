@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vueButtom</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <input v-model="msg" type="text" @focus="clean"></input>
+        <button id="c1" @click="clickButton">CLick</button>
+        <p v-if="msg">{{ msg }}</p>
+    </div>
+    <script>
+        const app = Vue.createApp({
+            data()
+            {
+                return {
+                    msg: ''
+                }
+            }, 
+            methods:
+            {
+                clickButton() {
+                    this.msg = 'Hello ' + this.msg + '!';
+                    //window.location.href = "https://example.com";
+                },
+                clean() {
+                    this.msg = "";
+                }
+            }
+        });
+        app.mount('#app');
+    </script>
+</body>
+</html>
