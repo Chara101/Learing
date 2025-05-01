@@ -33,11 +33,10 @@ private:
     char face; // 蛇的方向
     int rate; //蛇的速度
 public:
-    Snake() {
-        Snake(0, 0);
+    Snake() : Snake(0, 0, 'L') {
     }
-    Snake(int x, int y) : Role("snake", 'S', x, y) {
-        face = 'L';
+    Snake(int x, int y, char f) : Role("snake", 'S', x, y) {
+        face = f;
         rate = 1;
     }
     char GetFace(){ return face; };
@@ -79,26 +78,8 @@ private:
         cursorInfo.bVisible = false; // 隱藏游標
         SetConsoleCursorInfo(hConsole, &cursorInfo);
     }
-    void Move(Role &role, char face){ //改變值
-        int x = role.GetX();
-        int y = role.GetY();
-        switch(face){
-            case 'U':
-                if(y - 1 >= 0) role.SetY(role.GetY() + 1);
-                break;
-            case 'D':
-                if(y + 1 < height) role.SetY(role.GetY() + 1);
-                break;
-            case 'L':
-                if(x - 1 >= 0) role.SetX(role.GetX() - 1);
-                break;
-            case 'R':
-                if(x + 1 < width) role.SetX(role.GetX() + 1);
-                break;
-        }
-    }
 
-    void Move(Role role, char face, int &ox, int &oy){ //只取值不改變
+    void Move(Role role, char face, int &ox, int &oy){ //根據蛇頭的方向改變座標不改變蛇頭
         int x = role.GetX();
         int y = role.GetY();
         switch(face){ //根據方向改變座標
@@ -119,8 +100,7 @@ private:
         oy = y; //傳回新的座標
     }
 public:
-    Map(){
-        Map(20, 20);
+    Map() : Map(20, 20){
         // v = new vector<vector<int>>(height, vector<int>(width, 0));
         // apple = SetPos(new Apple(0, 0));
     }
@@ -129,15 +109,16 @@ public:
         v = vector<vector<int> >(height, vector<int>(width, 0));
         apple = new Apple();
         SetPos(*apple);
-        snakes.push_back(new Snake(0, 0));
+        snakes.push_back(new Snake());
         SetPos(*snakes[0]);
-        int tempx;
-        int tempy;
-        Move(*snakes[0], 'R', tempx, tempy); //測試用
-        snakes.push_back(new Snake(tempx, tempy)); //測試用
-        Move(*snakes[0], 'R', tempx, tempy); //測試用
-        snakes.push_back(new Snake(tempx, tempy)); //測試用
+        // int tempx;
+        // int tempy;
+        // Move(*snakes[0], 'R', tempx, tempy); //測試用
+        // snakes.push_back(new Snake(tempx, tempy)); //測試用
+        // Move(*snakes[0], 'R', tempx, tempy); //測試用
+        // snakes.push_back(new Snake(tempx, tempy)); //測試用
         SetCursorPosition(apple->GetX(), apple->GetY()); //設定蘋果位置
+        cout << apple->GetIcon();
     }
 
     ~Map(){
@@ -160,53 +141,59 @@ public:
         role.SetY(y);
     }
 
-    void Control(char ch){
-        switch(ch){
-            case 'w':
-                snakes[snakes.size()]->SetFace('U');
+    void Control(char keycode){
+        switch(keycode){
+            case 72: // ↑
+                snakes.front()->SetFace('U');
                 break;
-            case 's':
-                snakes[snakes.size()]->SetFace('D');
+            case 80: // ↓
+                snakes.front()->SetFace('D');
                 break;
-            case 'a':
-                snakes[snakes.size()]->SetFace('L');
+            case 75: // ←
+                snakes.front()->SetFace('L');
                 break;
-            case 'd':
-                snakes[snakes.size()]->SetFace('R');
+            case 77: // →
+                snakes.front()->SetFace('R');
                 break;
             default:
                 break;
         }
-        //Move(*snakes[0], snakes[0]->GetFace());
     }
 
     void Print(){ //印出地圖
-        system("cls");
+        //system("cls");
         //SetCursorPosition(apple->GetX(), apple->GetY()); //設定蘋果位置
-        cout << apple->GetIcon();
-        for(auto temp : snakes){
-            SetCursorPosition(temp->GetX(), temp->GetY());
-            cout << temp->GetIcon();
-        }
+        // for(auto temp : snakes){
+        //     SetCursorPosition(temp->GetX(), temp->GetY());
+        //     cout << temp->GetIcon();
+        // }
+        SetCursorPosition(snakes.back()->GetX(), snakes.back()->GetY());
+        cout << ' ';
         int tempx, tempy;
-        Move(*snakes[0], snakes[0]->GetFace(), tempx, tempy); //測試用
-        snakes.push_front(new Snake(tempx, tempy));
+        char f;
+        Move(*snakes.front(), snakes.front()->GetFace(), tempx, tempy); //測試用
+        f = snakes.front()->GetFace(); //測試用
+        snakes.push_front(new Snake(tempx, tempy, f));
         snakes.pop_back();
+        SetCursorPosition(snakes.front()->GetX(), snakes.front()->GetY());
+        cout << snakes.front()->GetIcon(); //印出蛇頭
     }
 };
 
 int main(){
     srand(time(NULL));
     Map* map = new Map(20, 20);
-    if(kbhit()){
-        char ch = getch();
-        if(ch == '?'){
-            char temp = getch();
-            map->Control(temp);
+    while(true){
+        if(kbhit()) {
+            char ch = getch();
+            if (ch == -32 || ch == 0) { // 方向鍵開頭碼
+                char arrow = getch();   // 第二個字元
+                map->Control(arrow);    // 傳進第二字元
+            }
         }
+        map->Print();
+        Sleep(500);
     }
-    map->Print();
-    Sleep(1000);
     cin.get();
     return 0;
 }
