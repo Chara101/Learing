@@ -101,7 +101,7 @@ private:
     void Move(Role role, char face, int &ox, int &oy){ //只取值不改變
         int x = role.GetX();
         int y = role.GetY();
-        switch(face){
+        switch(face){ //根據方向改變座標
             case 'U':
                 if(y - 1 >= 0) y -= 1;
                 break;
@@ -115,8 +115,8 @@ private:
                 if(x + 1 < width) x += 1;
                 break;
         }
-        ox = x;
-        oy = y;
+        ox = x; //傳回新的座標
+        oy = y; //傳回新的座標
     }
 public:
     Map(){
@@ -125,6 +125,7 @@ public:
         // apple = SetPos(new Apple(0, 0));
     }
     Map(int w, int h) : width(w), height(h) {
+        HideCursor();
         v = vector<vector<int> >(height, vector<int>(width, 0));
         apple = new Apple();
         SetPos(*apple);
@@ -136,7 +137,7 @@ public:
         snakes.push_back(new Snake(tempx, tempy)); //測試用
         Move(*snakes[0], 'R', tempx, tempy); //測試用
         snakes.push_back(new Snake(tempx, tempy)); //測試用
-        HideCursor();
+        SetCursorPosition(apple->GetX(), apple->GetY()); //設定蘋果位置
     }
 
     ~Map(){
@@ -159,13 +160,29 @@ public:
         role.SetY(y);
     }
 
-    void Control(){
-
+    void Control(char ch){
+        switch(ch){
+            case 'w':
+                snakes[snakes.size()]->SetFace('U');
+                break;
+            case 's':
+                snakes[snakes.size()]->SetFace('D');
+                break;
+            case 'a':
+                snakes[snakes.size()]->SetFace('L');
+                break;
+            case 'd':
+                snakes[snakes.size()]->SetFace('R');
+                break;
+            default:
+                break;
+        }
+        //Move(*snakes[0], snakes[0]->GetFace());
     }
 
-    void Print(){
+    void Print(){ //印出地圖
         system("cls");
-        SetCursorPosition(apple->GetX(), apple->GetY());
+        //SetCursorPosition(apple->GetX(), apple->GetY()); //設定蘋果位置
         cout << apple->GetIcon();
         for(auto temp : snakes){
             SetCursorPosition(temp->GetX(), temp->GetY());
@@ -181,10 +198,15 @@ public:
 int main(){
     srand(time(NULL));
     Map* map = new Map(20, 20);
-    while(!kbhit()){
-        map->Print();
-        Sleep(1000);
+    if(kbhit()){
+        char ch = getch();
+        if(ch == '?'){
+            char temp = getch();
+            map->Control(temp);
+        }
     }
+    map->Print();
+    Sleep(1000);
     cin.get();
     return 0;
 }
