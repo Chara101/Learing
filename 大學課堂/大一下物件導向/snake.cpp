@@ -54,7 +54,7 @@ public:
     Apple(int x, int y) : Role("apple", 'A', x, y, 2) {
     }
     void GotHit(){
-        cout << name << ": got hit" << endl;
+        // cout << name << ": got hit" << endl;
     }
 };
 
@@ -66,6 +66,7 @@ class Map{
 private:
     int width;
     int height;
+    int gameover = 0; //遊戲結束的狀態 0:正常 1:遊戲結束
     Apple* apple;
     deque<Snake*> snakes;
     vector<vector<int>> v; //紀錄地圖的使用狀況 0空 1蛇 2蘋果
@@ -90,16 +91,31 @@ private:
         switch(face){ //根據方向改變座標
             case 'U':
                 if(y - 1 >= 0) y -= 1;
+                else status = 1; //撞牆
                 break;
             case 'D':
                 if(y + 1 < height) y += 1;
+                else status = 1; //撞牆
                 break;
             case 'L':
                 if(x - 1 >= 0) x -= 1;
+                else status = 1; //撞牆
                 break;
             case 'R':
                 if(x + 1 < width) x += 1;
+                else status = 1; //撞牆
                 break;
+        }
+        if(v[y][x] == 1){ //撞到自己
+            status = 2;
+        }
+        else if(v[y][x] == 2){ //吃到蘋果
+            status = 3;
+            apple->GotHit(); //吃到蘋果
+            v[y][x] = 0; //將蘋果的座標設為空
+            SetPos(*apple); //重新設定蘋果的座標
+            SetCursorPosition(apple->GetX() + 1, apple->GetY() + 1); //設定蘋果位置
+            cout << apple->GetIcon(); //印出蘋果
         }
         v[y][x] = role.GetId(); //紀錄地圖的使用狀況
         ox = x; //傳回新的座標
@@ -180,6 +196,7 @@ public:
     }
 
     void Print(){ //印出地圖
+        Sleep(500);
         //system("cls");
         //SetCursorPosition(apple->GetX(), apple->GetY()); //設定蘋果位置
         // for(auto temp : snakes){
@@ -190,19 +207,32 @@ public:
         cout << ' ';
         int tempx, tempy;
         char f;
-        Move(*snakes.front(), snakes.front()->GetFace(), tempx, tempy); //測試用
+        int status = 3;
+        status = Move(*snakes.front(), snakes.front()->GetFace(), tempx, tempy); //測試用
         f = snakes.front()->GetFace(); //測試用
         snakes.push_front(new Snake(tempx, tempy, f));
-        snakes.pop_back();
+        if(status != 3) snakes.pop_back();
+        if(status == 1 || status == 2){ //撞牆或撞到自己
+            gameover = 1; //遊戲結束
+        }
         SetCursorPosition(snakes.front()->GetX() + 1, snakes.front()->GetY() + 1);
         cout << snakes.front()->GetIcon(); //印出蛇頭
     }
+
+    int GetGameOver(){ //遊戲結束的狀態 0:正常 1:遊戲結束
+        return gameover;
+    };
 };
 
 int main(){
     srand(time(NULL));
     Map* map = new Map(20, 20);
     while(true){
+        if(map->GetGameOver() == 1){ //遊戲結束
+            system("cls");
+            cout << "Game Over" << endl;
+            break;
+        }
         if(kbhit()) {
             char ch = getch();
             if (ch == -32 || ch == 0) { // 方向鍵開頭碼
@@ -211,7 +241,6 @@ int main(){
             }
         }
         map->Print();
-        Sleep(500);
     }
     cin.get();
     return 0;
