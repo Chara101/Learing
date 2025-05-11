@@ -72,8 +72,8 @@ private:
     COORD coord;
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     void SetCursorPosition(int x, int y) {
-        coord.X = x + 1;
-        coord.Y = y + 1; // +1是因為邊框的關係
+        coord.X = x;
+        coord.Y = y; // +1是因為邊框的關係
         SetConsoleCursorPosition(hConsole, coord);
     }
     void HideCursor() {
@@ -147,7 +147,7 @@ public:
         SetPos(*snakes[0]);
         snakes.push_back(new Snake(*snakes[0]));
         snakes.push_back(new Snake(*snakes[0]));
-        SetCursorPosition(apple->GetX(), apple->GetY()); //設定蘋果位置
+        SetCursorPosition(apple->GetX() + 1, apple->GetY() + 1); //設定蘋果位置
         cout << apple->GetIcon();
         PrintFrame(); //印出邊框
     }
@@ -186,7 +186,7 @@ public:
         //     SetCursorPosition(temp->GetX(), temp->GetY());
         //     cout << temp->GetIcon();
         // }
-        SetCursorPosition(snakes.back()->GetX(), snakes.back()->GetY());
+        SetCursorPosition(snakes.back()->GetX() + 1, snakes.back()->GetY() + 1);
         cout << ' ';
         int tempx, tempy;
         char f;
@@ -194,7 +194,7 @@ public:
         f = snakes.front()->GetFace(); //測試用
         snakes.push_front(new Snake(tempx, tempy, f));
         snakes.pop_back();
-        SetCursorPosition(snakes.front()->GetX(), snakes.front()->GetY());
+        SetCursorPosition(snakes.front()->GetX() + 1, snakes.front()->GetY() + 1);
         cout << snakes.front()->GetIcon(); //印出蛇頭
     }
 };
