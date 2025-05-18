@@ -8,7 +8,12 @@ namespace Accounting
 {
     class LaderModel
     {
-        public string Time {  get; set; }
+        public LaderModel(int id)
+        {
+            Id = id;
+        }
+        public int Id { get; }
+        public string Time { get; set; } = "NULL";
         public string Title { get; set; } = "NULL";
         public int Money { get; set; }
     }

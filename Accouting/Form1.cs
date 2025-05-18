@@ -6,6 +6,7 @@ namespace Accounting
         public Form1()
         {
             InitializeComponent();
+            ShowData();
         }
 
         private void textBox2_TextChanged(object sender, EventArgs e)
@@ -13,7 +14,7 @@ namespace Accounting
             for (int i = 1; i < textBox2.Text.Length; i++)
             {
                 char c = textBox2.Text[i];
-                if(i == 0 && c == '-')
+                if (i == 0 && c == '-')
                 {
                     continue;
                 }
@@ -30,12 +31,19 @@ namespace Accounting
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e) //添加
         {
             DateTime now = DateTime.Now;
             string date = now.ToString();
+            if(textBox1.Text == "")
+            {
+                //MessageBox.Show("Please enter a title.");
+                return;
+            }
+            if (textBox2.Text == "") return;
             lader.Add(date, textBox1.Text, int.Parse(textBox2.Text));
             listBox1.Items.Add(date + " " + textBox1.Text + " " + textBox2.Text);
+            ShowData();
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -43,7 +51,7 @@ namespace Accounting
 
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void ShowData()
         {
             listBox1.Items.Clear();
             listBox1.Items.Add("收入:");
@@ -52,10 +60,25 @@ namespace Accounting
                 listBox1.Items.Add(i.Time + " " + i.Title + " " + i.Money);
             }
             listBox1.Items.Add("支出:");
-            foreach(var i in lader.Cost)
+            foreach (var i in lader.Cost)
             {
                 listBox1.Items.Add(i.Time + " " + i.Title + " " + i.Money);
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if(textBox1.Text == "")
+            {
+                //MessageBox.Show("Please enter a title.");
+                return;
+            }
+            lader.Delete(textBox1.Text);
+            ShowData();
         }
     }
 }
