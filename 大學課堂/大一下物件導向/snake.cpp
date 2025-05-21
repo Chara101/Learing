@@ -1,7 +1,9 @@
 #include <bits/stdc++.h>
 #include <windows.h>
 #include <conio.h>
+#include <chrono>
 using namespace std;
+using namespace chrono;
 
 class Role{ // 角色基底
 protected:
@@ -41,7 +43,7 @@ public:
     }
     Snake(int x, int y, char f) : Role("snake", 'S', x, y, 1) {
         face = f;
-        rate = 1;
+        rate = 500;
     }
     char GetFace(){ return face; };
     void SetFace(char f){ this->face = f; };
@@ -67,6 +69,7 @@ private:
     int width;
     int height;
     int gameover = 0; //遊戲結束的狀態 0:正常 1:遊戲結束
+    steady_clock::time_point start = steady_clock::now();
     Apple* apple;
     deque<Snake*> snakes;
     vector<vector<int>> v; //紀錄地圖的使用狀況 0空 1蛇 2蘋果
@@ -106,17 +109,20 @@ private:
                 else status = 1; //撞牆
                 break;
         }
+        if(status != 0) return status; //如果撞牆就直接回傳
         if(v[y][x] == 1){ //撞到自己
             status = 2;
+            return status;
         }
-        else if(v[y][x] == 2){ //吃到蘋果
+        if(v[y][x] == 2){ //吃到蘋果
             status = 3;
             apple->GotHit(); //吃到蘋果
-            v[y][x] = 0; //將蘋果的座標設為空
+            //v[y][x] = 0; //將蘋果的座標設為空
             SetPos(*apple); //重新設定蘋果的座標
             SetCursorPosition(apple->GetX() + 1, apple->GetY() + 1); //設定蘋果位置
             cout << apple->GetIcon(); //印出蘋果
         }
+        //v[role.GetY()][role.GetX()] = 0; //將蛇的舊座標設為空
         v[y][x] = role.GetId(); //紀錄地圖的使用狀況
         ox = x; //傳回新的座標
         oy = y; //傳回新的座標
@@ -195,16 +201,7 @@ public:
         }
     }
 
-    void Print(){ //印出地圖
-        Sleep(500);
-        //system("cls");
-        //SetCursorPosition(apple->GetX(), apple->GetY()); //設定蘋果位置
-        // for(auto temp : snakes){
-        //     SetCursorPosition(temp->GetX(), temp->GetY());
-        //     cout << temp->GetIcon();
-        // }
-        SetCursorPosition(snakes.back()->GetX() + 1, snakes.back()->GetY() + 1);
-        cout << ' ';
+    void Action(){
         int tempx, tempy;
         char f;
         int status = 3;
@@ -215,6 +212,20 @@ public:
         if(status == 1 || status == 2){ //撞牆或撞到自己
             gameover = 1; //遊戲結束
         }
+        start = steady_clock::now(); //重置時間
+    }
+
+    void Print(){ //印出地圖
+        //Sleep(500);
+        //system("cls");
+        //SetCursorPosition(apple->GetX(), apple->GetY()); //設定蘋果位置
+        // for(auto temp : snakes){
+        //     SetCursorPosition(temp->GetX(), temp->GetY());
+        //     cout << temp->GetIcon();
+        // }
+        SetCursorPosition(snakes.back()->GetX() + 1, snakes.back()->GetY() + 1);
+        cout << ' ';
+        if(duration_cast<milliseconds>(steady_clock::now() - start).count() >= 500) Action();
         SetCursorPosition(snakes.front()->GetX() + 1, snakes.front()->GetY() + 1);
         cout << snakes.front()->GetIcon(); //印出蛇頭
     }
@@ -224,24 +235,37 @@ public:
     };
 };
 
-int main(){
-    srand(time(NULL));
-    Map* map = new Map(20, 20);
-    while(true){
-        if(map->GetGameOver() == 1){ //遊戲結束
-            system("cls");
-            cout << "Game Over" << endl;
-            break;
-        }
-        if(kbhit()) {
-            char ch = getch();
-            if (ch == -32 || ch == 0) { // 方向鍵開頭碼
-                char arrow = getch();   // 第二個字元
-                map->Control(arrow);    // 傳進第二字元
+class Game{
+private:
+    Map* map;
+public:
+    Game() : map(new Map(20, 20)) {
+        srand(time(NULL));
+        //map = new Map(20, 20);
+        while(true){
+            if(map->GetGameOver() == 1){ //遊戲結束
+                system("cls");
+                cout << "Game Over" << endl;
+                break;
             }
+            if(kbhit()) {
+                char ch = getch();
+                if (ch == -32 || ch == 0) { // 方向鍵開頭碼
+                    char arrow = getch();   // 第二個字元
+                    map->Control(arrow);    // 傳進第二字元
+                }
+            }
+            map->Print();
         }
-        map->Print();
     }
+    ~Game(){
+
+    }
+};
+
+int main(){
+    Game* game = new Game();
+    delete game;
     cin.get();
     return 0;
 }
