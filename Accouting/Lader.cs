@@ -15,9 +15,7 @@ namespace Accounting
         private int incomemoney = 0;
         private int costmoney = 0;
         private int countid = 1; //帳務編號
-        private List<LaderModel> income = new List<LaderModel>();
-        private List<LaderModel> cost = new List<LaderModel>();
-        //private Dictionary<int, LaderModel> all = new Dictionary<int, LaderModel> (); //全部帳務
+        private List<LaderModel> all = new List<LaderModel>(); //全部帳務
         //private Dictionary<int, LaderModel> income = new Dictionary<int, LaderModel>(); //帳務編號, 帳務內容
         //private Dictionary<int, LaderModel> cost = new Dictionary<int, LaderModel>(); //帳務編號, 帳務內容
         public string Name { get { return name; }}
@@ -26,8 +24,7 @@ namespace Accounting
         public int IncomeMoney { get { return incomemoney; } }
         public int CostMoney { get { return costmoney; } }
 
-        public List<LaderModel> Income { get { return income; } }
-        public List<LaderModel> Cost { get { return cost; } }
+        public List<LaderModel> All { get { return all; } }
 
         public Lader()
         {
@@ -57,39 +54,50 @@ namespace Accounting
                 {
                     throw new Exception("Required title.");
                 }
-                if (money >= 0)
-                {
-                    incomemoney += money;
-                    income.Add(temp);
-                }
-                else
-                {
-                    costmoney += money;
-                    cost.Add(temp);
-                }
+                all.Add(temp);
                 totalmoney += money;
             }
-            catch(Exception e)
+            catch (Exception e)
+            {
+                Console.WriteLine("Error: " + e.Message);
+            }
+        }
+        public void Delete(string title)
+        {
+            try
+            {
+                for(int i =  all.Count - 1; i >= 0; i--)
+                {
+                    if (all[i].Title == title)
+                    {
+                        all.RemoveAt(i);
+                    }
+                    else if(i == 0)
+                    {
+                        throw new Exception("帳務編號不存在");
+                    }
+                }
+            }
+            catch (Exception e)
             {
                 Console.WriteLine("Error: " + e.Message);
             }
         }
 
-        public void Delete(string title)
+        public void DeleteAll(string title)
         {
             try
             {
-                var i = income.Find(x => x.Title == title);
-                var j = cost.Find(x => x.Title == title);
-                if (i != null)
+                int check = 0;
+                foreach(var i in all)
                 {
-                    income.Remove(i);
+                    if (i.Title == title)
+                    {
+                        all.Remove(i);
+                        check++;
+                    }
                 }
-                else if(j != null)
-                {
-                    cost.Remove(j);
-                }
-                else
+                if(check == 0)
                 {
                     throw new Exception("帳務編號不存在");
                 }
@@ -97,6 +105,59 @@ namespace Accounting
             catch (Exception e)
             {
                 Console.WriteLine("Error: " + e.Message);
+            }
+        }
+
+        public List<LaderModel> Search(string title)
+        {
+            List<LaderModel> temp = new List<LaderModel>();
+            try
+            {
+                for (int i = all.Count - 1; i >= 0; i--)
+                {
+                    if (all[i].Title == title)
+                    {
+                        temp.Add(all[i]);
+                        break;
+                    }
+                }
+                if (temp.Count == 0) throw new Exception("帳務編號不存在");
+                else return temp;
+            }
+            catch (Exception e)
+            {
+                List<LaderModel> error = new List<LaderModel>();
+                error.Add(new LaderModel(0));
+                error[0].Time = "Error";
+                error[0].Title = "Error";
+                error[0].Money = 0;
+                return error;
+            }
+        }
+
+        public List<LaderModel> SearchAll(string title)
+        {
+            List<LaderModel> temp = new List<LaderModel>();
+            try
+            {
+                for (int i = all.Count - 1; i >= 0; i--)
+                {
+                    if (all[i].Title == title)
+                    {
+                        temp.Add(all[i]);
+                    }
+                }
+                if(temp.Count == 0) throw new Exception("帳務編號不存在");
+                else return temp;
+            }
+            catch (Exception e)
+            {
+                List<LaderModel> error = new List<LaderModel>();
+                error.Add(new LaderModel(0));
+                error[0].Time = "Error";
+                error[0].Title = "Error";
+                error[0].Money = 0;
+                return error;
             }
         }
     }

@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace Accounting
 {
     public partial class Form1 : Form
@@ -11,7 +13,7 @@ namespace Accounting
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-            for (int i = 1; i < textBox2.Text.Length; i++)
+            for (int i = 0; i < textBox2.Text.Length; i++)
             {
                 char c = textBox2.Text[i];
                 if (i == 0 && c == '-')
@@ -35,7 +37,7 @@ namespace Accounting
         {
             DateTime now = DateTime.Now;
             string date = now.ToString();
-            if(textBox1.Text == "")
+            if (textBox1.Text == "")
             {
                 //MessageBox.Show("Please enter a title.");
                 return;
@@ -55,30 +57,59 @@ namespace Accounting
         {
             listBox1.Items.Clear();
             listBox1.Items.Add("收入:");
-            foreach (var i in lader.Income)
+            foreach (var item in lader.All)
             {
-                listBox1.Items.Add(i.Time + " " + i.Title + " " + i.Money);
+                if(item.Money >= 0) listBox1.Items.Add(item.Time + " " + item.Title + " " + item.Money);
             }
             listBox1.Items.Add("支出:");
-            foreach (var i in lader.Cost)
+            foreach (var item in lader.All)
             {
-                listBox1.Items.Add(i.Time + " " + i.Title + " " + i.Money);
+                if (item.Money < 0) listBox1.Items.Add(item.Time + " " + item.Title + " " + item.Money);
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void button2_Click(object sender, EventArgs e) //Search
         {
+            if(textBox1.Text == "")
+            {
+                MessageBox.Show("Enter name");
+                return;
+            }
+            List<LaderModel>? temp = null;
+            if (label2.Text == "Yes")
+            {
+                temp = lader.SearchAll(textBox1.Text);
+            }
+            else
+            {
+                temp = lader.Search(textBox1.Text);
+            }
+            if(temp is not null)
+            {
+                listBox1.Items.Clear();
+                foreach (var item in temp)
+                {
+                    listBox1.Items.Add(item.Time + " " + item.Title + " " + item.Money);
+                }
+            }
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if(textBox1.Text == "")
+            if (textBox1.Text == "")
             {
                 //MessageBox.Show("Please enter a title.");
                 return;
             }
             lader.Delete(textBox1.Text);
             ShowData();
+        }
+
+        private void button4_Click(object sender, EventArgs e) //switch range
+        {
+            string temp = label2.Text;
+            if(temp == "No") label2.Text = "Yes";
+            else label2.Text = "No";
         }
     }
 }
