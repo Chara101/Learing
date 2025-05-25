@@ -12,13 +12,13 @@ private:
 public:
     void SetCursorPosition(int x, int y) {
         coord.X = x;
-        coord.Y = y; // +1是因為邊框的關係
+        coord.Y = y;
         SetConsoleCursorPosition(hConsole, coord);
     }
     void HideCursor() {
         CONSOLE_CURSOR_INFO cursorInfo;
         GetConsoleCursorInfo(hConsole, &cursorInfo);
-        cursorInfo.bVisible = false; // 隱藏游標
+        cursorInfo.bVisible = false;
         SetConsoleCursorInfo(hConsole, &cursorInfo);
     }
 };
@@ -39,11 +39,11 @@ public:
     void SetY(int y){ this->y = y; };
 };
 
-class Role{ // 角色基底
+class Role{
 protected:
     string name;
     char icon;
-    Coordinate* coor; //座標
+    Coordinate* coor;
     int id;
 public:
     Role() : Role("role", 'R', 0, 0, 0) {
@@ -53,7 +53,7 @@ public:
     Role(string n, char i, Coordinate* c, int d) : name(n), icon(i), coor(c), id(d) {
     }
     ~Role(){
-        delete coor; // 釋放座標記憶體
+        delete coor;
     }
     Coordinate* GetCoor(){ return coor; };
     void SetCoor(Coordinate* c){ this->coor = c; }
@@ -63,10 +63,10 @@ public:
     char GetIcon(){ return icon; };
 };
 
-class Snake : public Role{ // 蛇
+class Snake : public Role{
 private:
-    char face; // 蛇的方向
-    int rate; //蛇的速度
+    char face;
+    int rate;
 public:
     Snake() : Snake(0, 0, 'L', 500) {
     }
@@ -83,7 +83,7 @@ public:
     void SetRate(int r){ this->rate = r; };
 };
 
-class Apple : public Role{ // 蘋果
+class Apple : public Role{
 public:
     Apple() : Role("apple", 'A', 0, 0, 2) {
     }
@@ -97,17 +97,17 @@ class Map{
 private:
     int width;
     int height;
-    int gameover = 0; //遊戲結束的狀態 0:正常 1:遊戲結束
-    int status = 0; //狀態: 0:正常 1:遊戲結束 2:初始化失敗
+    int gameover = 0;
+    int status = 0;
     CmdHandler cmdh; 
-    vector<vector<int>> v; //紀錄地圖的使用狀況 0空 1蛇 2蘋果
+    vector<vector<int>> v;
 
-    void PrintFrame(){ //印出邊框
-        for(int i = 0; i < width + 2; i++){ //頂邊
+    void PrintFrame(){ 
+        for(int i = 0; i < width + 2; i++){
             cmdh.SetCursorPosition(i, 0);
             cout << '#';
         }
-        for(int i = 0; i < height + 2; i++){ //側邊
+        for(int i = 0; i < height + 2; i++){
             cmdh.SetCursorPosition(0, i);
             cout << '#';
             cmdh.SetCursorPosition(width + 1, i);
@@ -125,7 +125,7 @@ public:
     Map(int w, int h) : width(w), height(h) {
         cmdh.HideCursor();
         v = vector<vector<int> >(height, vector<int>(width, 0));
-        PrintFrame(); //印出邊框
+        PrintFrame();
     }
 
     ~Map(){
@@ -141,37 +141,37 @@ public:
         return new Coordinate(x, y);
     }
 
-    int CheckSpace(Coordinate* c){ //檢查座標是否可以使用
+    int CheckSpace(Coordinate* c){
         if(c == nullptr) return -1;
-        if(c->GetX() < 0 || c->GetX() >= width || c->GetY() < 0 || c->GetY() >= height) return -1; //超出邊界
+        if(c->GetX() < 0 || c->GetX() >= width || c->GetY() < 0 || c->GetY() >= height) return -1;
         return v[c->GetY()][c->GetX()];
     }
 
-    int CheckSpace(int& x, int& y){ //檢查座標是否可以使用
-        if(x < 0 || x >= width || y < 0 || y >= height) return -1; //超出邊界
+    int CheckSpace(int& x, int& y){
+        if(x < 0 || x >= width || y < 0 || y >= height) return -1;
         return v[y][x];
     }
 
-    void Mark(Coordinate* c, int id){ //標記地圖上的位置
+    void Mark(Coordinate* c, int id){
         v[c->GetY()][c->GetX()] = id;
     }
 
-    void Mark(int& x, int& y, int id){ //標記地圖上的位置
+    void Mark(int& x, int& y, int id){
         v[y][x] = id;
     }
 
-    void Unmark(Coordinate* c){ //取消標記地圖上的位置
+    void Unmark(Coordinate* c){
         v[c->GetY()][c->GetX()] = 0;
     }
 
-    void Unmark(int& x, int& y){ //取消標記地圖上的位置
+    void Unmark(int& x, int& y){
         v[y][x] = 0;
     }
 
-    int GetGameOver(){ //遊戲結束的狀態 0:正常 1:遊戲結束
+    int GetGameOver(){
         return gameover;
     };
-    void SetGameOver(int g){ //設定遊戲結束的狀態
+    void SetGameOver(int g){
         gameover = g;
     };
     int GetWidth(){ return width; };
@@ -181,18 +181,17 @@ public:
 class Snakes{
 private:
     CmdHandler cmdh;
-    deque<Snake*> snakes; //蛇的整個身體
+    deque<Snake*> snakes;
     Map* map1;
-    int status = 0; //0: common, 1:dead
+    int status = 0;
     const int id = 1;
 public:
     Snakes(Map* m) : map1(m){
-        Coordinate* c = map1->GetSpace(); //取得一個空的座標
+        Coordinate* c = map1->GetSpace();
         int x = c->GetX();
         int y = c->GetY();
-        // 初始蛇長3節，水平向左
         for(int i = 0; i < 3; i++){
-            Coordinate* part = new Coordinate(x + i, y); // 右邊的節點在前，蛇頭在最左
+            Coordinate* part = new Coordinate(x + i, y);
             snakes.push_back(new Snake(part->GetX(), part->GetY(), 'L', 500));
             map1->Mark(part, id);
         }
@@ -205,16 +204,16 @@ public:
 
     void Turn(char keycode){
         switch(keycode){
-            case 72: //上
+            case 72:
                 snakes.front()->SetFace('U');
                 break;
-            case 80: //下
+            case 80: 
                 snakes.front()->SetFace('D');
                 break;
-            case 75: //左
+            case 75: 
                 snakes.front()->SetFace('L');
                 break;
-            case 77: //右
+            case 77: 
                 snakes.front()->SetFace('R');
                 break;
             default:
@@ -224,70 +223,70 @@ public:
 
     void Hasten(int command){
         int rate = snakes.front()->GetRate();
-        if(command == 43){ //加速
-            if(rate >= 400) rate -= 50; //最小速度100ms
-        } else if(command == 45){ //減速
-            if(rate <= 600) rate += 50; //最大速度500ms
+        if(command == 43){ 
+            if(rate >= 400) rate -= 50; 
+        } else if(command == 45){ 
+            if(rate <= 600) rate += 50; 
         }
-        snakes.front()->SetRate(rate); //設定蛇的速度
+        snakes.front()->SetRate(rate); 
     }
 
-     int Move(){ //移動蛇
-        int status = 0; //紀錄蛇的狀態 0:正常 1:撞牆 2:撞到自己 3:吃到蘋果
+     int Move(){
+        int status = 0;
         int height = map1->GetHeight();
         int width = map1->GetWidth();
         int x = snakes[0]->GetCoor()->GetX();
         int y = snakes[0]->GetCoor()->GetY();
-        switch(snakes[0]->GetFace()){ //根據方向改變座標
+        switch(snakes[0]->GetFace()){
             case 'U':
                 if(y - 1 >= 0) y -= 1;
-                else status = 1; //撞牆
+                else status = 1;
                 break;
             case 'D':
                 if(y + 1 < height) y += 1;
-                else status = 1; //撞牆
+                else status = 1;
                 break;
             case 'L':
                 if(x - 1 >= 0) x -= 1;
-                else status = 1; //撞牆
+                else status = 1;
                 break;
             case 'R':
                 if(x + 1 < width) x += 1;
-                else status = 1; //撞牆
+                else status = 1; 
                 break;
         }
         if(status != 0) return status;
-        if(map1->CheckSpace(x, y) == 1){ //撞到自己
+        if(map1->CheckSpace(x, y) == 1){
             status = 2;
             return status;
         }
         if(map1->CheckSpace(x, y) == 2){
             status = 3;
         }
-        snakes.push_front(new Snake(x, y, snakes.front()->GetFace(), snakes.front()->GetRate())); //新增蛇頭
-        map1->Mark(snakes.front()->GetCoor(), snakes.front()->GetId()); //紀錄蛇頭的位置
+        snakes.push_front(new Snake(x, y, snakes.front()->GetFace(), snakes.front()->GetRate()));
+        map1->Mark(snakes.front()->GetCoor(), snakes.front()->GetId());
         if(status != 3){
-            map1->Unmark(snakes.back()->GetCoor()); //取消蛇尾的位置
-            delete snakes.back(); //釋放蛇尾的記憶體
-            snakes.pop_back(); //移除蛇尾
+            map1->Unmark(snakes.back()->GetCoor());
+            delete snakes.back();
+            snakes.pop_back();
         }
-        return status; //傳回狀態
+        return status;
     }
 
-    void Print(){ //印出
+    void Print(){
         cmdh.SetCursorPosition(snakes.front()->GetCoor()->GetX() + 1, snakes.front()->GetCoor()->GetY() + 1);
         cout << snakes.front()->GetIcon();
         cmdh.SetCursorPosition(snakes.back()->GetCoor()->GetX() + 1, snakes.back()->GetCoor()->GetY() + 1);
         cout << ' ';
     }
     deque<Snake*>& GetSnakes(){ return snakes; }
-    int GetStatus(){ return status; } //取得蛇的狀態
-    int GetRate(){ return snakes.front()->GetRate(); } //取得蛇的速度
+    int GetStatus(){ return status; }
+    int GetRate(){ return snakes.front()->GetRate(); }
 };
 
 class Apples{
 private:
-    vector<Apple*> apples; //蘋果的整個身體
+    vector<Apple*> apples;
     Map* map1;
     const int id = 2;
     CmdHandler cmdh;
@@ -301,13 +300,13 @@ public:
         }
     }
 
-    void AddApple(){ //新增蘋果
-        Coordinate* c = map1->GetSpace(); //取得一個空的座標
-        apples.push_back(new Apple(c)); //新增蘋果
-        map1->Mark(c, id); //標記蘋果位置
+    void AddApple(){
+        Coordinate* c = map1->GetSpace();
+        apples.push_back(new Apple(c));
+        map1->Mark(c, id);
     }
 
-    void GotHit(Coordinate* c){ //被蛇吃掉
+    void GotHit(Coordinate* c){
         auto tar = find_if(apples.begin(), apples.end(), [c](auto x){ return x->GetCoor()->GetX() == c->GetX() && x->GetCoor()->GetY() == c->GetY(); });
         if(tar != apples.end()){
             map1->Unmark((*tar)->GetCoor());
@@ -341,7 +340,7 @@ public:
     SnakeGame() : map1(new Map(20, 20)) {
         srand(time(NULL));
         snakes = new Snakes(map1);
-        apples = new Apples(map1, 3); //初始蘋果
+        apples = new Apples(map1, 3);
     }
     ~SnakeGame(){
         delete map1;
@@ -351,13 +350,13 @@ public:
 
     void Control(){
         int ch = getch();
-        if (ch == 224 || ch == 0) { // 方向鍵開頭碼
-            char arrow = getch();   // 第二個字元
-            snakes->Turn(arrow);    // 傳進第二字元
+        if (ch == 224 || ch == 0) {
+            char arrow = getch();   
+            snakes->Turn(arrow);   
             return;
         }
         if(ch == 43 || ch == 45){
-            snakes->Hasten(ch); //加速或減速
+            snakes->Hasten(ch);
             if(ch == 43) {
                 if(pace < 5) pace++;
             } else if(ch == 45) {
@@ -380,7 +379,7 @@ public:
 
     void Snake(){
         while(true){
-            if(map1->GetGameOver() == 1){ //遊戲結束
+            if(map1->GetGameOver() == 1){ 
                 system("cls");
                 cout << "Game Over" << endl;
                 break;
@@ -389,7 +388,7 @@ public:
                 Control();
             }
             if(level < 5){
-                level = (score / 10) + 1; //每10分升一級
+                level = (score / 10) + 1;
             }
             steady_clock::time_point now = steady_clock::now();
             if(duration_cast<milliseconds>(steady_clock::now() - Snstart).count() >= (snakes->GetRate() - (25 * (level - 1)))){
@@ -397,14 +396,14 @@ public:
                 int result = snakes->Move();
                 snakes->Print(); //印出蛇
                 if(result == 3){
-                    apples->GotHit(snakes->GetSnakes().front()->GetCoor()); //蘋果被吃掉
+                    apples->GotHit(snakes->GetSnakes().front()->GetCoor());
                     score++;
                 }
-                if(result == 1 || result == 2){ //撞牆或撞到自己
-                    map1->SetGameOver(1); //設定遊戲結束
+                if(result == 1 || result == 2){ 
+                    map1->SetGameOver(1); 
                 }
-                Snstart = steady_clock::now(); // 重置時間
-                apples->Print(); //印出蘋果
+                Snstart = steady_clock::now(); 
+                apples->Print();
                 Print();
             }
         }
