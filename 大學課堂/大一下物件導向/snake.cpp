@@ -5,6 +5,11 @@
 using namespace std;
 using namespace chrono;
 
+enum class SnakeisEaten{
+    Yes,
+    No
+};
+
 class CmdHandler{
 private:
     COORD coord;
@@ -39,7 +44,16 @@ public:
     void SetY(int y){ this->y = y; };
 };
 
-class Role{ // 角色基底
+class IRole{
+public:
+    virtual Coordinate* GetCoor() = 0;
+    virtual int GetId() = 0;
+    virtual string GetName() = 0;
+    virtual char GetIcon() = 0;
+    virtual void SetCoor(Coordinate* c) = 0;
+};
+
+class Role : public IRole{ // 角色基底
 protected:
     string name;
     char icon;
@@ -63,35 +77,35 @@ public:
     char GetIcon(){ return icon; };
 };
 
-class Snake : public Role{ // 蛇
-private:
-    char face; // 蛇的方向
-    int rate; //蛇的速度
-public:
-    Snake() : Snake(0, 0, 'L', 500) {
-    }
-    Snake(int x, int y, char f, int r) : Role("snake", 'S', x, y, 1), rate(r) {
-        face = f;
-    }
-    Snake(Coordinate* c, char f, int r):Role("snake", 'S', c, 1), rate(r) {
-        face = f;
-    }
+// class Snake : public Role{ // 蛇
+// private:
+//     char face; // 蛇的方向
+//     int rate; //蛇的速度
+// public:
+//     Snake() : Snake(0, 0, 'L', 500) {
+//     }
+//     Snake(int x, int y, char f, int r) : Role("snake", 'S', x, y, 1), rate(r) {
+//         face = f;
+//     }
+//     Snake(Coordinate* c, char f, int r):Role("snake", 'S', c, 1), rate(r) {
+//         face = f;
+//     }
 
-    char GetFace(){ return face; };
-    void SetFace(char f){ this->face = f; };
-    int GetRate(){ return rate; };
-    void SetRate(int r){ this->rate = r; };
-};
+//     char GetFace(){ return face; };
+//     void SetFace(char f){ this->face = f; };
+//     int GetRate(){ return rate; };
+//     void SetRate(int r){ this->rate = r; };
+// };
 
-class Apple : public Role{ // 蘋果
-public:
-    Apple() : Role("apple", 'A', 0, 0, 2) {
-    }
-    Apple(int x, int y) : Role("apple", 'A', x, y, 2) {
-    }
-    Apple(Coordinate* c) : Role("apple", 'A', c, 2) {
-    }
-};
+// class Apple : public Role{ // 蘋果
+// public:
+//     Apple() : Role("apple", 'A', 0, 0, 2) {
+//     }
+//     Apple(int x, int y) : Role("apple", 'A', x, y, 2) {
+//     }
+//     Apple(Coordinate* c) : Role("apple", 'A', c, 2) {
+//     }
+// };
 
 class Map{
 private:
@@ -180,25 +194,20 @@ public:
 
 class Snakes{
 private:
-    CmdHandler cmdh;
-    deque<Snake*> snakes; //蛇的整個身體
-    Map* map1;
-    int status = 0; //0: common, 1:dead
-    const int id = 1;
+    CmdHandler _cmdh;
+    deque<IRole*> _snakes; //蛇的整個身體
+    char _face;
+    int _rate;
+    int _status = 0; //0: common, 1:dead
+    const int _id = 1;
 public:
-    Snakes(Map* m) : map1(m){
-        Coordinate* c = map1->GetSpace(); //取得一個空的座標
-        int x = c->GetX();
-        int y = c->GetY();
-        // 初始蛇長3節，水平向左
-        for(int i = 0; i < 3; i++){
-            Coordinate* part = new Coordinate(x + i, y); // 右邊的節點在前，蛇頭在最左
-            snakes.push_back(new Snake(part->GetX(), part->GetY(), 'L', 500));
-            map1->Mark(part, id);
+    Snakes(vector<Coordinate*> temp) : _face('L'), _rate(500){
+        for(Coordinate* c : temp){
+            _snakes.push_back(new Role("snake", 'S', c, _id));
         }
     }
     ~Snakes(){
-        for(auto temp : snakes){
+        for(auto temp : _snakes){
             delete temp;
         }
     }
@@ -206,16 +215,16 @@ public:
     void Turn(char keycode){
         switch(keycode){
             case 72: //上
-                snakes.front()->SetFace('U');
+                _face = 'U';
                 break;
             case 80: //下
-                snakes.front()->SetFace('D');
+                _face = 'D';
                 break;
             case 75: //左
-                snakes.front()->SetFace('L');
+                _face = 'L';
                 break;
             case 77: //右
-                snakes.front()->SetFace('R');
+                _face = 'R';
                 break;
             default:
                 break;
@@ -223,16 +232,85 @@ public:
     }
 
     void Hasten(int command){
-        int rate = snakes.front()->GetRate();
         if(command == 43){ //加速
-            if(rate >= 400) rate -= 50; //最小速度100ms
+            if(_rate >= 400) _rate -= 50; //最小速度100ms
         } else if(command == 45){ //減速
-            if(rate <= 600) rate += 50; //最大速度500ms
+            if(_rate <= 600) _rate += 50; //最大速度500ms
         }
-        snakes.front()->SetRate(rate); //設定蛇的速度
     }
 
-     int Move(){ //移動蛇
+    void Move(Coordinate* c, SnakeisEaten e){
+        _snakes.push_front(new Role("snake", 'S', c, _id)); 
+        if(e != SnakeisEaten::Yes) _snakes.pop_back();
+    }
+
+    deque<IRole*>& GetSnakes(){ return _snakes; }
+    int GetStatus(){ return _status; } //取得蛇的狀態
+    int GetRate(){ return _rate; } //取得蛇的速度
+};
+
+class Apples{
+private:
+    vector<IRole*> _apples; //蘋果的整個身體
+    const int _id = 2;
+public:
+    Apples(vector<Coordinate*> temp) {
+        for(Coordinate* c : temp){
+            _apples.push_back(new Role("apple", 'A', c, _id)); //新增蘋果
+        }
+    }
+    ~Apples(){
+        for(auto apple : _apples){
+            delete apple;
+        }
+    }
+
+    void AddApple(Coordinate* c){
+        _apples.push_back(new Role("apple", 'A', c, _id));
+    }
+
+    void GotHit(Coordinate* c){ //被蛇吃掉
+        auto tar = find_if(_apples.begin(), _apples.end(), [c](auto x){ return x->GetCoor()->GetX() == c->GetX() && x->GetCoor()->GetY() == c->GetY(); });
+        if(tar != _apples.end()){
+            delete *tar;
+            _apples.erase(tar);
+        }
+    }
+
+    vector<IRole*>& GetApples(){ return _apples; }
+};
+
+class SnakeGame{
+private:
+    int score = 0;
+    int pace = 3;
+    int level = 1;
+    Map* map1;
+    Snakes* snakes;
+    Apples* apples;
+    CmdHandler cmdh;
+    steady_clock::time_point pstart = steady_clock::now();
+    steady_clock::time_point Snstart = steady_clock::now();
+public:
+    SnakeGame() : map1(new Map(20, 20)) {
+        srand(time(NULL));
+        snakes = new Snakes(map1);
+        apples = new Apples(map1, 3); //初始蘋果
+    }
+    ~SnakeGame(){
+        delete map1;
+        delete snakes;
+        delete apples;
+    }
+
+    void Print(){
+        for(auto apple : apples){
+            cmdh.SetCursorPosition(apple->GetCoor()->GetX() + 1, apple->GetCoor()->GetY() + 1);
+            cout << apple->GetIcon();
+        }
+    }
+
+    int Move(){ //移動蛇
         int status = 0; //紀錄蛇的狀態 0:正常 1:撞牆 2:撞到自己 3:吃到蘋果
         int height = map1->GetHeight();
         int width = map1->GetWidth();
@@ -279,74 +357,6 @@ public:
         cout << snakes.front()->GetIcon();
         cmdh.SetCursorPosition(snakes.back()->GetCoor()->GetX() + 1, snakes.back()->GetCoor()->GetY() + 1);
         cout << ' ';
-    }
-    deque<Snake*>& GetSnakes(){ return snakes; }
-    int GetStatus(){ return status; } //取得蛇的狀態
-    int GetRate(){ return snakes.front()->GetRate(); } //取得蛇的速度
-};
-
-class Apples{
-private:
-    vector<Apple*> apples; //蘋果的整個身體
-    Map* map1;
-    const int id = 2;
-    CmdHandler cmdh;
-public:
-    Apples(Map* m, int num) : map1(m){
-        for(int i = 0; i < num; i++) AddApple();
-    }
-    ~Apples(){
-        for(auto apple : apples){
-            delete apple;
-        }
-    }
-
-    void AddApple(){ //新增蘋果
-        Coordinate* c = map1->GetSpace(); //取得一個空的座標
-        apples.push_back(new Apple(c)); //新增蘋果
-        map1->Mark(c, id); //標記蘋果位置
-    }
-
-    void GotHit(Coordinate* c){ //被蛇吃掉
-        auto tar = find_if(apples.begin(), apples.end(), [c](auto x){ return x->GetCoor()->GetX() == c->GetX() && x->GetCoor()->GetY() == c->GetY(); });
-        if(tar != apples.end()){
-            map1->Unmark((*tar)->GetCoor());
-            delete *tar;
-            apples.erase(tar);
-            AddApple();
-        }
-    }
-
-    void Print(){
-        for(auto apple : apples){
-            cmdh.SetCursorPosition(apple->GetCoor()->GetX() + 1, apple->GetCoor()->GetY() + 1);
-            cout << apple->GetIcon();
-        }
-    }
-    vector<Apple*>& GetApples(){ return apples; }
-};
-
-class SnakeGame{
-private:
-    int score = 0;
-    int pace = 3;
-    int level = 1;
-    Map* map1;
-    Snakes* snakes;
-    Apples* apples;
-    CmdHandler cmdh;
-    steady_clock::time_point pstart = steady_clock::now();
-    steady_clock::time_point Snstart = steady_clock::now();
-public:
-    SnakeGame() : map1(new Map(20, 20)) {
-        srand(time(NULL));
-        snakes = new Snakes(map1);
-        apples = new Apples(map1, 3); //初始蘋果
-    }
-    ~SnakeGame(){
-        delete map1;
-        delete snakes;
-        delete apples;
     }
 
     void Control(){
