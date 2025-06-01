@@ -286,12 +286,12 @@ private:
     int _level = 1;
     steady_clock::time_point _start = steady_clock::now();
 public:
-    void operator++(){
-        _score++;
+    void AddScore(){
+        this->_score++;
         if(_score % 10 == 0) { //每10分升一級
-            _level++;
-            _bpace++;
-            _pace++;
+            this->_level++;
+            if (_bpace < 12) this->_bpace++;
+            if (_pace < _bpace) this->_pace++;
         }
     }
 
@@ -341,6 +341,12 @@ public:
             _cmdh.SetCursorPosition(apple->GetCoor()->GetX() + 1, apple->GetCoor()->GetY() + 1);
             cout << apple->GetIcon();
         }
+    }
+
+    void Erase(Coordinate* c) {
+        _cmdh.SetCursorPosition(c->GetX() + 1, c->GetY() + 1);
+        cout << ' '; //清除位置
+
     }
 
     void PrintBoard(Board* board) {
@@ -399,14 +405,19 @@ private:
         _view.PrintBoard(_board); //印出分數板
         vector<Coordinate*> scoor(3);
         scoor[0] = _map1->GetSpace(); //蛇頭
-        scoor[1] = _map1->GetAdjacentSpace(scoor[0], Direction::Left); //蛇身
-        scoor[2] = _map1->GetAdjacentSpace(scoor[1], Direction::Left); //蛇尾
+        scoor[1] = _map1->GetAdjacentSpace(scoor[0], Direction::Right); //蛇身
+        scoor[2] = _map1->GetAdjacentSpace(scoor[1], Direction::Right); //蛇尾
         _snakes = new Snakes(scoor);
-        for(int i = 0; i < 3; i++){
-            scoor[i] = _map1->GetSpace(); //取得空位
+        for(auto temp : scoor){
+            _map1->Mark(temp, 1); //標記蛇的位置
         }
-        _apples = new Apples(scoor); //初始蘋果
         _view.PrintSnake(_snakes, _eaten); //印出蛇
+        vector<Coordinate*> apples(3);
+        for(int i = 0; i < 3; i++){
+            apples[i] = _map1->GetSpace(); //取得空位
+            _map1->Mark(apples[i], 2); //標記蘋果的位置
+        }
+        _apples = new Apples(apples); //初始蘋果
         _view.PrintApples(_apples); //印出蘋果
     }
 public:
@@ -435,6 +446,16 @@ public:
             case Direction::Left: return make_pair(Direction::Down, Direction::Up);
             case Direction::Right: return make_pair(Direction::Up, Direction::Down);
         }
+    }
+
+    void EatApple(Coordinate* c){
+        _apples->GotHit(c);
+        _map1->Unmark(c); 
+        _view.Erase(c);
+        _board->AddScore();
+        Coordinate* temp = _map1->GetSpace();
+        _apples->AddApple(temp); 
+        _map1->Mark(temp, 2);
     }
 
     void Move(){ //移動蛇
@@ -495,6 +516,7 @@ public:
     }
 
     void GameLoop(){
+        getchar();
         while(true){
             if(_status == GameStatus::GameOver){ //遊戲結束
                 _view.ShowGameOver();
@@ -508,6 +530,9 @@ public:
             if(duration_cast<milliseconds>(steady_clock::now() - Snstart).count() >= _board->GetRate()){
                 Coordinate* c = new Coordinate();
                 Move();
+                if(_eaten == SnakeisEaten::Yes) {
+                    EatApple(_snakes->GetSnakes().front()->GetCoor());
+                }
                 Snstart = steady_clock::now(); // 重置時間
                 _view.PrintSnake(_snakes, _eaten); //印出蛇
                 _view.PrintApples(_apples); //印出蘋果
