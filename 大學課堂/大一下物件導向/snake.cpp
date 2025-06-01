@@ -10,6 +10,18 @@ enum class SnakeisEaten{
     No
 };
 
+enum class Direction{
+    Up = 72,
+    Down = 80,
+    Left = 75,
+    Right = 77
+};
+
+enum class GameStatus{
+    Common,
+    GameOver
+};
+
 class CmdHandler{
 private:
     COORD coord;
@@ -111,37 +123,14 @@ class Map{
 private:
     int width;
     int height;
-    int gameover = 0; //遊戲結束的狀態 0:正常 1:遊戲結束
     int status = 0; //狀態: 0:正常 1:遊戲結束 2:初始化失敗
-    CmdHandler cmdh; 
     vector<vector<int>> v; //紀錄地圖的使用狀況 0空 1蛇 2蘋果
-
-    void PrintFrame(){ //印出邊框
-        for(int i = 0; i < width + 2; i++){ //頂邊
-            cmdh.SetCursorPosition(i, 0);
-            cout << '#';
-        }
-        for(int i = 0; i < height + 2; i++){ //側邊
-            cmdh.SetCursorPosition(0, i);
-            cout << '#';
-            cmdh.SetCursorPosition(width + 1, i);
-            cout << '#';
-        }
-        cmdh.SetCursorPosition(0, height + 1);
-        for(int i = 0; i < width + 2; i++){
-            cout << '#';
-        }
-
-    }
 public:
     Map() : Map(20, 20){
     }
     Map(int w, int h) : width(w), height(h) {
-        cmdh.HideCursor();
         v = vector<vector<int> >(height, vector<int>(width, 0));
-        PrintFrame(); //印出邊框
     }
-
     ~Map(){
     }
 
@@ -151,6 +140,31 @@ public:
         while(v[y][x] != 0){
             x = rand() % width;
             y = rand() % height;
+        }
+        return new Coordinate(x, y);
+    }
+
+    Coordinate* GetAdjacentSpace(Coordinate* c, Direction f){ //取得座標的相鄰空位
+        if(c == nullptr) return nullptr;
+        int x = c->GetX();
+        int y = c->GetY();
+        switch(f){
+            case Direction::Up:
+                if(y - 1 >= 0) y -= 1;
+                else return nullptr; //超出邊界
+                break;
+            case Direction::Down:
+                if(y + 1 < height) y += 1;
+                else return nullptr; //超出邊界
+                break;
+            case Direction::Left:
+                if(x - 1 >= 0) x -= 1;
+                else return nullptr; //超出邊界
+                break;
+            case Direction::Right:
+                if(x + 1 < width) x += 1;
+                else return nullptr; //超出邊界
+                break;
         }
         return new Coordinate(x, y);
     }
@@ -181,13 +195,6 @@ public:
     void Unmark(int& x, int& y){ //取消標記地圖上的位置
         v[y][x] = 0;
     }
-
-    int GetGameOver(){ //遊戲結束的狀態 0:正常 1:遊戲結束
-        return gameover;
-    };
-    void SetGameOver(int g){ //設定遊戲結束的狀態
-        gameover = g;
-    };
     int GetWidth(){ return width; };
     int GetHeight(){ return height; };
 };
@@ -196,12 +203,11 @@ class Snakes{
 private:
     CmdHandler _cmdh;
     deque<IRole*> _snakes; //蛇的整個身體
-    char _face;
-    int _rate;
+    Direction _face;
     int _status = 0; //0: common, 1:dead
     const int _id = 1;
 public:
-    Snakes(vector<Coordinate*> temp) : _face('L'), _rate(500){
+    Snakes(vector<Coordinate*> temp) : _face(Direction::Left){
         for(Coordinate* c : temp){
             _snakes.push_back(new Role("snake", 'S', c, _id));
         }
@@ -215,27 +221,19 @@ public:
     void Turn(char keycode){
         switch(keycode){
             case 72: //上
-                _face = 'U';
+                _face = Direction::Up;
                 break;
             case 80: //下
-                _face = 'D';
+                _face = Direction::Down;
                 break;
             case 75: //左
-                _face = 'L';
+                _face = Direction::Left;
                 break;
             case 77: //右
-                _face = 'R';
+                _face = Direction::Right;
                 break;
             default:
                 break;
-        }
-    }
-
-    void Hasten(int command){
-        if(command == 43){ //加速
-            if(_rate >= 400) _rate -= 50; //最小速度100ms
-        } else if(command == 45){ //減速
-            if(_rate <= 600) _rate += 50; //最大速度500ms
         }
     }
 
@@ -246,7 +244,7 @@ public:
 
     deque<IRole*>& GetSnakes(){ return _snakes; }
     int GetStatus(){ return _status; } //取得蛇的狀態
-    int GetRate(){ return _rate; } //取得蛇的速度
+    Direction GetFace(){ return _face;}
 };
 
 class Apples{
@@ -280,142 +278,239 @@ public:
     vector<IRole*>& GetApples(){ return _apples; }
 };
 
-class SnakeGame{
+class Board{
 private:
-    int score = 0;
-    int pace = 3;
-    int level = 1;
-    Map* map1;
-    Snakes* snakes;
-    Apples* apples;
-    CmdHandler cmdh;
-    steady_clock::time_point pstart = steady_clock::now();
-    steady_clock::time_point Snstart = steady_clock::now();
+    int _score = 0;
+    int _bpace = 3;
+    int _pace = 3;
+    int _level = 1;
+    steady_clock::time_point _start = steady_clock::now();
 public:
-    SnakeGame() : map1(new Map(20, 20)) {
-        srand(time(NULL));
-        snakes = new Snakes(map1);
-        apples = new Apples(map1, 3); //初始蘋果
-    }
-    ~SnakeGame(){
-        delete map1;
-        delete snakes;
-        delete apples;
+    void operator++(){
+        _score++;
+        if(_score % 10 == 0) { //每10分升一級
+            _level++;
+            _bpace++;
+            _pace++;
+        }
     }
 
-    void Print(){
-        for(auto apple : apples){
-            cmdh.SetCursorPosition(apple->GetCoor()->GetX() + 1, apple->GetCoor()->GetY() + 1);
+    void AddPace(){
+        if(_pace < (_bpace + 2)) _pace++;
+    }
+
+    void ReducePace(){
+        if(_pace > (_bpace - 2)) _pace--;
+    }
+
+    void ResetTime(){
+        _start = steady_clock::now();
+    }
+
+    int GetScore(){ return _score;}
+    int GetPace(){ return _pace; }
+    int GetLevel(){ return _level; }
+    steady_clock::time_point GetStartTime(){ return _start; }
+    int GetRate(){ //取得速度
+        int rate = 700 - (50 * _pace);
+        if(rate < 100) rate = 100;
+        return rate;
+    }
+    void SetScore(int score){ _score = score; }
+    void SetPace(int pace){ _pace = pace; }
+    void SetLevel(int level){ _level = level; }
+};
+
+class GameView {
+private:
+    CmdHandler _cmdh;
+
+public:
+    void PrintSnake(Snakes* s, SnakeisEaten e) {
+        IRole* head = s->GetSnakes().front();
+        IRole* end = s->GetSnakes().back();
+        _cmdh.SetCursorPosition(head->GetCoor()->GetX() + 1, head->GetCoor()->GetY() + 1);
+        cout << head->GetIcon();
+        if(e == SnakeisEaten::Yes) return;
+        _cmdh.SetCursorPosition(end->GetCoor()->GetX() + 1, end->GetCoor()->GetY() + 1);
+        cout << ' ';
+    }
+
+    void PrintApples(Apples* apples) {
+        for (IRole* apple : apples->GetApples()) {
+            _cmdh.SetCursorPosition(apple->GetCoor()->GetX() + 1, apple->GetCoor()->GetY() + 1);
             cout << apple->GetIcon();
         }
     }
 
-    int Move(){ //移動蛇
-        int status = 0; //紀錄蛇的狀態 0:正常 1:撞牆 2:撞到自己 3:吃到蘋果
-        int height = map1->GetHeight();
-        int width = map1->GetWidth();
-        int x = snakes[0]->GetCoor()->GetX();
-        int y = snakes[0]->GetCoor()->GetY();
-        switch(snakes[0]->GetFace()){ //根據方向改變座標
-            case 'U':
-                if(y - 1 >= 0) y -= 1;
-                else status = 1; //撞牆
-                break;
-            case 'D':
-                if(y + 1 < height) y += 1;
-                else status = 1; //撞牆
-                break;
-            case 'L':
-                if(x - 1 >= 0) x -= 1;
-                else status = 1; //撞牆
-                break;
-            case 'R':
-                if(x + 1 < width) x += 1;
-                else status = 1; //撞牆
-                break;
-        }
-        if(status != 0) return status;
-        if(map1->CheckSpace(x, y) == 1){ //撞到自己
-            status = 2;
-            return status;
-        }
-        if(map1->CheckSpace(x, y) == 2){
-            status = 3;
-        }
-        snakes.push_front(new Snake(x, y, snakes.front()->GetFace(), snakes.front()->GetRate())); //新增蛇頭
-        map1->Mark(snakes.front()->GetCoor(), snakes.front()->GetId()); //紀錄蛇頭的位置
-        if(status != 3){
-            map1->Unmark(snakes.back()->GetCoor()); //取消蛇尾的位置
-            delete snakes.back(); //釋放蛇尾的記憶體
-            snakes.pop_back(); //移除蛇尾
-        }
-        return status; //傳回狀態
+    void PrintBoard(Board* board) {
+        _cmdh.SetCursorPosition(25, 23);
+        cout << "Time: " << duration_cast<seconds>(steady_clock::now() - board->GetStartTime()).count() << "s";
+        _cmdh.SetCursorPosition(25, 14);
+        cout << "Score: " << board->GetScore();
+        _cmdh.SetCursorPosition(25, 15);
+        cout << "Pace: " << board->GetPace();
+        _cmdh.SetCursorPosition(25, 16);
+        cout << "Level: " << board->GetLevel();
     }
 
-    void Print(){ //印出
-        cmdh.SetCursorPosition(snakes.front()->GetCoor()->GetX() + 1, snakes.front()->GetCoor()->GetY() + 1);
-        cout << snakes.front()->GetIcon();
-        cmdh.SetCursorPosition(snakes.back()->GetCoor()->GetX() + 1, snakes.back()->GetCoor()->GetY() + 1);
-        cout << ' ';
+    void PrintFrame(Map* map1){ //印出邊框
+        for(int i = 0; i < map1->GetWidth() + 2; i++){ //頂邊
+            _cmdh.SetCursorPosition(i, 0);
+            cout << '#';
+        }
+        for(int i = 0; i < map1->GetHeight() + 2; i++){ //側邊
+            _cmdh.SetCursorPosition(0, i);
+            cout << '#';
+            _cmdh.SetCursorPosition(map1->GetWidth() + 1, i);
+            cout << '#';
+        }
+        _cmdh.SetCursorPosition(0, map1->GetHeight() + 1);
+        for(int i = 0; i < map1->GetWidth() + 2; i++){
+            cout << '#';
+        }
+
     }
+
+    void ShowGameOver() {
+        system("cls");
+        cout << "Game Over" << endl;
+    }
+};
+
+
+class SnakeGame{
+private:
+    
+    Map* _map1;
+    Snakes* _snakes;
+    Apples* _apples;
+    Board* _board;
+    GameView _view;
+    CmdHandler _cmdh;
+    GameStatus _status = GameStatus::Common;
+    SnakeisEaten _eaten = SnakeisEaten::No;
+    steady_clock::time_point Snstart = steady_clock::now();
+
+    void Initialize(){
+        srand(time(NULL));
+        _cmdh.HideCursor(); //隱藏游標
+        _view.PrintFrame(_map1); //印出邊框
+        _view.PrintBoard(_board); //印出分數板
+        vector<Coordinate*> scoor(3);
+        scoor[0] = _map1->GetSpace(); //蛇頭
+        scoor[1] = _map1->GetAdjacentSpace(scoor[0], Direction::Left); //蛇身
+        scoor[2] = _map1->GetAdjacentSpace(scoor[1], Direction::Left); //蛇尾
+        _snakes = new Snakes(scoor);
+        for(int i = 0; i < 3; i++){
+            scoor[i] = _map1->GetSpace(); //取得空位
+        }
+        _apples = new Apples(scoor); //初始蘋果
+        _view.PrintSnake(_snakes, _eaten); //印出蛇
+        _view.PrintApples(_apples); //印出蘋果
+    }
+public:
+    SnakeGame() : _board(new Board()), _map1(new Map(20, 20)) {
+        Initialize();
+    }
+    ~SnakeGame(){
+        delete _map1;
+        delete _snakes;
+        delete _apples;
+    }
+
+    Direction Reverse(Direction d){
+        switch(d){
+            case Direction::Up: return Direction::Down;
+            case Direction::Down: return Direction::Up;
+            case Direction::Left: return Direction::Right;
+            case Direction::Right: return Direction::Left;
+        }
+    }
+
+    pair<Direction, Direction> LDDirection(Direction d){
+        switch(d){
+            case Direction::Up: return make_pair(Direction::Left, Direction::Right);
+            case Direction::Down: return make_pair(Direction::Right, Direction::Left);
+            case Direction::Left: return make_pair(Direction::Down, Direction::Up);
+            case Direction::Right: return make_pair(Direction::Up, Direction::Down);
+        }
+    }
+
+    void Move(){ //移動蛇
+        int height = _map1->GetHeight();
+        int width = _map1->GetWidth();
+        int x = _snakes->GetSnakes().front()->GetCoor()->GetX();
+        int y = _snakes->GetSnakes().front()->GetCoor()->GetY();
+        switch(_snakes->GetFace()){ //根據方向改變座標
+            case Direction::Up:
+                if(y - 1 >= 0) y -= 1;
+                else _status = GameStatus::GameOver; //撞牆
+                break;
+            case Direction::Down:
+                if(y + 1 < height) y += 1;
+                else _status = GameStatus::GameOver; //撞牆
+                break;
+            case Direction::Left:
+                if(x - 1 >= 0) x -= 1;
+                else _status = GameStatus::GameOver; //撞牆
+                break;
+            case Direction::Right:
+                if(x + 1 < width) x += 1;
+                else _status = GameStatus::GameOver; //撞牆
+                break;
+        }
+        if(_status != GameStatus::Common) return;
+        Coordinate* temp = new Coordinate(x, y);
+        if(_map1->CheckSpace(temp) == 1){ //撞到自己
+            _status = GameStatus::GameOver;
+            return;
+        }
+        if(_map1->CheckSpace(temp) == 2) _eaten = SnakeisEaten::Yes; //吃到蘋果
+        else _eaten = SnakeisEaten::No; //沒有吃到蘋果
+        _snakes->Move(temp, _eaten); //新增蛇頭
+        _map1->Mark(temp, _snakes->GetSnakes().front()->GetId()); //紀錄蛇頭的位置
+        if(_eaten == SnakeisEaten::No){
+            _map1->Unmark(_snakes->GetSnakes().back()->GetCoor()); //取消蛇尾的位置
+        }
+    }
+
+    
 
     void Control(){
         int ch = getch();
         if (ch == 224 || ch == 0) { // 方向鍵開頭碼
             char arrow = getch();   // 第二個字元
-            snakes->Turn(arrow);    // 傳進第二字元
+            _snakes->Turn(arrow);    // 傳進第二字元
             return;
         }
         if(ch == 43 || ch == 45){
-            snakes->Hasten(ch); //加速或減速
             if(ch == 43) {
-                if(pace < 5) pace++;
+                _board->AddPace();
             } else if(ch == 45) {
-                if(pace > 1) pace--;
+                _board->ReducePace();
             }
             return;
         }
     }
 
-    void Print(){
-        cmdh.SetCursorPosition(25, 23);
-        cout << "Time:" << duration_cast<seconds>(steady_clock::now() - pstart).count() << "s";
-        cmdh.SetCursorPosition(25, 14);
-        cout << "Score: " << score;
-        cmdh.SetCursorPosition(25, 15);
-        cout << "Pace: " << pace;
-        cmdh.SetCursorPosition(25, 16);
-        cout << "Level: " << level;
-    }
-
-    void Snake(){
+    void GameLoop(){
         while(true){
-            if(map1->GetGameOver() == 1){ //遊戲結束
-                system("cls");
-                cout << "Game Over" << endl;
+            if(_status == GameStatus::GameOver){ //遊戲結束
+                _view.ShowGameOver();
                 break;
             }
             if(kbhit()) {
                 Control();
             }
-            if(level < 5){
-                level = (score / 10) + 1; //每10分升一級
-            }
+            _view.PrintBoard(_board); //印出分數板
             steady_clock::time_point now = steady_clock::now();
-            if(duration_cast<milliseconds>(steady_clock::now() - Snstart).count() >= (snakes->GetRate() - (25 * (level - 1)))){
+            if(duration_cast<milliseconds>(steady_clock::now() - Snstart).count() >= _board->GetRate()){
                 Coordinate* c = new Coordinate();
-                int result = snakes->Move();
-                snakes->Print(); //印出蛇
-                if(result == 3){
-                    apples->GotHit(snakes->GetSnakes().front()->GetCoor()); //蘋果被吃掉
-                    score++;
-                }
-                if(result == 1 || result == 2){ //撞牆或撞到自己
-                    map1->SetGameOver(1); //設定遊戲結束
-                }
+                Move();
                 Snstart = steady_clock::now(); // 重置時間
-                apples->Print(); //印出蘋果
-                Print();
+                _view.PrintSnake(_snakes, _eaten); //印出蛇
+                _view.PrintApples(_apples); //印出蘋果
             }
         }
     }
@@ -423,7 +518,7 @@ public:
 
 int main(){
     SnakeGame* game = new SnakeGame();
-    game->Snake();
+    game->GameLoop();
     delete game;
     cin.get();
     return 0;
