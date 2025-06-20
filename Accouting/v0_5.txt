@@ -1,0 +1,2 @@
+定義基本儲存介面IStatic
+實作BasicList

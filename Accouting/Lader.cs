@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Accounting
 {
-    class Lader
+    class Lader : ILader
     {
         private string name;
         private int id;
@@ -15,7 +17,7 @@ namespace Accounting
         private int incomemoney = 0;
         private int costmoney = 0;
         private int countid = 1; //帳務編號
-        private List<LaderModel> all = new List<LaderModel>(); //全部帳務
+        private List<Record> all = new List<Record>(); //全部帳務
         //private Dictionary<int, LaderModel> income = new Dictionary<int, LaderModel>(); //帳務編號, 帳務內容
         //private Dictionary<int, LaderModel> cost = new Dictionary<int, LaderModel>(); //帳務編號, 帳務內容
         public string Name { get { return name; }}
@@ -24,7 +26,7 @@ namespace Accounting
         public int IncomeMoney { get { return incomemoney; } }
         public int CostMoney { get { return costmoney; } }
 
-        public List<LaderModel> All { get { return all; } }
+        public List<Record> Records { get { return all; } }
 
         public Lader()
         {
@@ -37,30 +39,16 @@ namespace Accounting
             this.id = id;
         }
 
-        public void Add(string time, string title, int money)
+        public void Add(DateTime time, string title, string type, int money)
         {
-            LaderModel? temp = null;
-            try
-            {
-                if (title is not null)
-                {
-                    temp = new LaderModel(countid);
-                    temp.Time = time;
-                    temp.Title = title;
-                    temp.Money = money;
-                    countid++;
-                }
-                else
-                {
-                    throw new Exception("Required title.");
-                }
-                all.Add(temp);
-                totalmoney += money;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error: " + e.Message);
-            }
+            if (title == "" || type == "") return;
+            if (title is null || type is null) return;
+            Record temp = new Record(title);
+            temp.Time = time;
+            temp.Id = countid++;
+            temp.Type = type;
+            temp.Money = money;
+            all.Add(temp);
         }
         public void Delete(string title)
         {
@@ -108,9 +96,9 @@ namespace Accounting
             }
         }
 
-        public List<LaderModel> Search(string title)
+        public List<Record> Search(string title)
         {
-            List<LaderModel> temp = new List<LaderModel>();
+            List<Record> temp = new List<Record>();
             try
             {
                 for (int i = all.Count - 1; i >= 0; i--)
@@ -126,18 +114,18 @@ namespace Accounting
             }
             catch (Exception e)
             {
-                List<LaderModel> error = new List<LaderModel>();
-                error.Add(new LaderModel(0));
-                error[0].Time = "Error";
+                List<Record> error = new List<Record>();
+                //error.Add(new Record(0));
+                error[0].Time = DateTime.Now;
                 error[0].Title = "Error";
                 error[0].Money = 0;
                 return error;
             }
         }
 
-        public List<LaderModel> SearchAll(string title)
+        public List<Record> SearchAll(string title)
         {
-            List<LaderModel> temp = new List<LaderModel>();
+            List<Record> temp = new List<Record>();
             try
             {
                 for (int i = all.Count - 1; i >= 0; i--)
@@ -152,12 +140,55 @@ namespace Accounting
             }
             catch (Exception e)
             {
-                List<LaderModel> error = new List<LaderModel>();
-                error.Add(new LaderModel(0));
-                error[0].Time = "Error";
+                List<Record> error = new List<Record>();
+                //error.Add(new Record(0));
+                error[0].Time = DateTime.Now;
                 error[0].Title = "Error";
                 error[0].Money = 0;
                 return error;
+            }
+        }
+
+        public void Insert(DateTime time, string title, string type, int money)
+        {
+            try
+            {
+                if (title == "" || type == "") return;
+                if (title is null || type is null) return;
+                Record temp = new Record(title);
+                temp.Time = time;
+                temp.Title = title;
+                temp.Type = type;
+                temp.Money = money;
+                for (int i = 0; i < all.Count; i++)
+                {
+                    if (DateTime.Compare(all[i].Time, temp.Time) > 0)
+                    {
+                        all.Insert(i, temp);
+                        return;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public void Clear()
+        {
+            try
+            {
+                foreach (var i in all)
+                {
+                    i.Title = "NULL";
+                    i.Type = "NULL";
+                    i.Money = 0;
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Error: Can not clear all.");
             }
         }
     }
