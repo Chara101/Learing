@@ -53,7 +53,7 @@ namespace Accounting
 
         private void button1_Click(object sender, EventArgs e) //添加
         {
-            if (textBox1.Text == "")
+            if (textBox1.Text == "" || textBox1.Text == "*")
             {
                 MessageBox.Show("Please enter a title.");
                 return;
@@ -77,12 +77,13 @@ namespace Accounting
         {
             listBox1.Items.Clear();
             listBox1.Items.Add("收入:");
-            foreach (var item in _control.Search("*"))
+            var data = _control.GetData("*");
+            foreach (var item in data)
             {
                 if (item.Money >= 0) listBox1.Items.Add(item.Time + " " + item.Title + " " + item.Money);
             }
             listBox1.Items.Add("支出:");
-            foreach (var item in _control.Search("*"))
+            foreach (var item in data)
             {
                 if (item.Money < 0) listBox1.Items.Add(item.Time + " " + item.Title + " " + item.Money);
             }
@@ -92,10 +93,10 @@ namespace Accounting
         {
             if (textBox1.Text == "")
             {
-                MessageBox.Show("Enter name");
+                MessageBox.Show("Please enter a title.");
                 return;
             }
-            var temp = _control.Search(textBox1.Text);
+            var temp = _control.GetData(textBox1.Text);
             if (temp is not null)
             {
                 listBox1.Items.Clear();
@@ -117,7 +118,7 @@ namespace Accounting
             ShowData();
         }
 
-        
+
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -127,6 +128,23 @@ namespace Accounting
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void button4_Click(object sender, EventArgs e) //修改
+        {
+            if (textBox1.Text == "" || textBox1.Text == "*")
+            {
+                MessageBox.Show("Please enter a title.");
+                return;
+            }
+            if (textBox2.Text == "") return;
+            DateTime date = DateTime.Now;
+            string name = textBox1.Text;
+            string type = listBox1.Text;
+            string money = textBox2.Text;
+            _control.Update(name, type, money);
+            listBox1.Items.Add(date + " " + textBox1.Text + " " + textBox2.Text);
+            ShowData();
         }
     }
 }

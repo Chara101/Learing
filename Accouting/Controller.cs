@@ -5,21 +5,24 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Accounting.DataBase;
+using Accounting.View;
 
 namespace Accounting
 {
     class Controller
     {
-        private readonly IDataBase _db = new BasicList();
+        private readonly IDataBase _db = new SqlserverCtrl();
         private IViewer _viewer = new BasicView();
         private ListBox _showbox;
         public Controller()
         {
             _showbox = new ListBox();
+            Initialize();
         }
         public Controller(ListBox showbox)
         {
             _showbox = showbox;
+            Initialize();
         }
 
         public void Initialize()
@@ -34,6 +37,7 @@ namespace Accounting
             {
                 int money = Int32.Parse(textmoney);
                 Record r = new Record(title, type, money);
+                r.Time = time;
                 _db.Insert(r);
                 try
                 {
@@ -57,7 +61,7 @@ namespace Accounting
             {
                 Record r = new Record(title);
                 _db.Delete(r);
-                //_viewer.ShowAllRecord(_db.Select(new Record("*")), _showbox);
+                _viewer.ShowAllRecord(_db.GetAll(), _showbox);
             }
             catch (Exception e)
             {
@@ -65,12 +69,16 @@ namespace Accounting
             }
         }
 
-        public List<Record> Search(string title)
+        public List<Record> GetData(string title)
         {
             try
             {
+                if (title == "*")
+                {
+                    return _db.GetAll();
+                }
                 Record r = new Record(title);
-                var result = _db.Select(r);
+                var result = _db.SelectByTitle(r);
                 return result;
             }
             catch
@@ -79,12 +87,11 @@ namespace Accounting
             }
         }
 
-        public void Update(DateTime d, string title, string type, string money)
+        public void Update(string title, string type, string money)
         {
             try
             {
                 Record r = new Record(title);
-                r.Time = d;
                 r.Type = type;
                 try
                 {
@@ -95,11 +102,10 @@ namespace Accounting
                     Console.WriteLine("Cannot parse money value.");
                 }
                 _db.Update(r);
-                //_lader.Insert(d, title, type, Int32.Parse(money));
             }
             catch
             {
-
+                MessageBox.Show("Error updating record. Please check your input.");
             }
         }
     }
