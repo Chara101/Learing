@@ -4,15 +4,81 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using testAccounting1;
 
 namespace TestAcounting.DataStorage
 {
     internal class ListMode : IDataStorage
     {
-        List<RecordForm> records = new List<RecordForm>();
+        private List<RecordForm> records = new List<RecordForm>();
+        private int income = 0;
+        private int cost = 0;
+        private int asset = 0;
+        private int liability = 0;
+        private int equity = 0;
         public void Initialize()
         {
             records = new List<RecordForm>();
+        }
+        public int GetTotals(RecordForm r)
+        {
+            int result = 0;
+            try
+            {
+                if (string.IsNullOrEmpty(r.Category)) throw new ArgumentException("Category cannot be null or empty.");
+                switch (r.Category)
+                {
+                    case "收入":
+                        result = income;
+                        break;
+                    case "費用":
+                        result = cost;
+                        break;
+                    case "資產":
+                        result = asset;
+                        break;
+                    case "負債":
+                        result = liability;
+                        break;
+                    case "權益":
+                        result = equity;
+                        break;
+                    default:
+                        throw new ArgumentException("Invalid category specified.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error retrieving totals: {ex.Message}");
+            }
+            return result;
+        }
+        private void UpdateTotals(RecordForm r, bool isPostive)
+        {
+            if (!isPostive)
+            {
+                r.Amount = -r.Amount;
+            }
+            switch (r.Category)
+            {
+                case "收入":
+                    income += r.Amount;
+                    break;
+                case "費用":
+                    cost += r.Amount;
+                    break;
+                case "資產":
+                    asset += r.Amount;
+                    break;
+                case "負債":
+                    liability += r.Amount;
+                    break;
+                case "權益":
+                    equity += r.Amount;
+                    break;
+                default:
+                    throw new ArgumentException("Invalid category specified.");
+            }
         }
         public void Add(RecordForm r)
         {
@@ -22,6 +88,7 @@ namespace TestAcounting.DataStorage
                 if(r.Category is null || r.Category == "") throw new ArgumentException("Category cannot be null or empty.");
                 if (r.Date == DateTime.MinValue) r.Date = DateTime.Now;
                 records.Add(r);
+                UpdateTotals(r, true);
             }
             catch(Exception ex)
             {
@@ -58,6 +125,14 @@ namespace TestAcounting.DataStorage
                     MessageBox.Show($"Error removing record by title: {ex.Message}");
                 }
             }
+            try
+            {
+                UpdateTotals(r, false);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating category totals: {ex.Message}");
+            }
         }
         public void Remove(RecordForm r, ETarget target1, ETarget target2)
         {
@@ -69,6 +144,7 @@ namespace TestAcounting.DataStorage
                     var num = records.Count(temp => temp.Title == r.Title);
                     if (num == 0 || data is null) throw new ArgumentException("No record found with the specified title.");
                     records.Remove(data);
+                    UpdateTotals(r, false);
                 }
                 catch (Exception ex)
                 {
@@ -129,12 +205,14 @@ namespace TestAcounting.DataStorage
                 {
                     if (record.Id == r.Id) // Assuming Id is unique
                     {
+                        UpdateTotals(record, false);
                         record.Date = r.Date;
                         record.Title = r.Title;
                         record.Category = r.Category;
                         record.EventType = r.EventType;
                         record.Amount = r.Amount;
                         record.Comment = r.Comment;
+                        UpdateTotals(r, true);
                     }
                 }
             }

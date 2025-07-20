@@ -60,11 +60,11 @@ namespace testAccounting1
             try
             {
                 if (_controller is null) throw new NotImplementedException("Controller is not initialized.");
-                var income = _controller.GetData(new RecordForm { Category = "收入" }, ETarget.category, ERange.All).Sum(temp => temp.Amount);
-                var cost = _controller.GetData(new RecordForm { Category = "費用" }, ETarget.category, ERange.All).Sum(temp => temp.Amount);
-                var asset = _controller.GetData(new RecordForm { Category = "資產" }, ETarget.category, ERange.All).Sum(temp => temp.Amount);
-                var liability = _controller.GetData(new RecordForm { Category = "負債" }, ETarget.category, ERange.All).Sum(temp => temp.Amount);
-                var equity = _controller.GetData(new RecordForm { Category = "權益" }, ETarget.category, ERange.All).Sum(temp => temp.Amount);
+                var income = _controller.GetTotals(new RecordForm{ Category = "收入" });
+                var cost = _controller.GetTotals(new RecordForm { Category = "費用" });
+                var asset = _controller.GetTotals(new RecordForm { Category = "資產" });
+                var liability = _controller.GetTotals(new RecordForm { Category = "負債" });
+                var equity = _controller.GetTotals(new RecordForm { Category = "權益" });
                 series.Points.AddXY("收入", income);
                 series.Points.AddXY("費用", cost);
                 series.Points.AddXY("資產", asset);
@@ -82,11 +82,11 @@ namespace testAccounting1
             try
             {
                 if (_controller is null) throw new NotImplementedException("Controller is not initialized.");
-                chart1.Series[0].Points[0].YValues[0] = _controller.GetData(new RecordForm { Category = "收入" }, ETarget.category, ERange.First).Sum(temp => temp.Amount);
-                chart1.Series[0].Points[1].YValues[0] = _controller.GetData(new RecordForm { Category = "費用" }, ETarget.category, ERange.First).Sum(temp => temp.Amount);
-                chart1.Series[0].Points[2].YValues[0] = _controller.GetData(new RecordForm { Category = "資產" }, ETarget.category, ERange.First).Sum(temp => temp.Amount);
-                chart1.Series[0].Points[3].YValues[0] = _controller.GetData(new RecordForm { Category = "負債" }, ETarget.category, ERange.First).Sum(temp => temp.Amount);
-                chart1.Series[0].Points[4].YValues[0] = _controller.GetData(new RecordForm { Category = "權益" }, ETarget.category, ERange.First).Sum(temp => temp.Amount);
+                chart1.Series[0].Points[0].YValues[0] = _controller.GetTotals(new RecordForm { Category = "收入" });
+                chart1.Series[0].Points[1].YValues[0] = _controller.GetTotals(new RecordForm { Category = "費用" });
+                chart1.Series[0].Points[2].YValues[0] = _controller.GetTotals(new RecordForm { Category = "資產" });
+                chart1.Series[0].Points[3].YValues[0] = _controller.GetTotals(new RecordForm { Category = "負債" });
+                chart1.Series[0].Points[4].YValues[0] = _controller.GetTotals(new RecordForm { Category = "權益" });
                 chart1.Invalidate();
             }
             catch (Exception ex)

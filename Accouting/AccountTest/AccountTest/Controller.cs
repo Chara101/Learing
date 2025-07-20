@@ -24,6 +24,10 @@ namespace TestAcounting
         {
             _db.Initialize();
         }
+        public int GetTotals(RecordForm r)
+        {
+            return _db.GetTotals(r);
+        }
         public List<RecordForm> GetData(RecordForm r, ETarget target, ERange range)
         {
             List<RecordForm> result = new List<RecordForm>();
