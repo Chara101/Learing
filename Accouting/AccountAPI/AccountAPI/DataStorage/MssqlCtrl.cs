@@ -203,7 +203,74 @@ namespace AccountAPI.DataStorage
             }
             return records;
         }
-        List<RecordForm> GetRecordsBy(RecordForm r1, RecordForm r2, ETarget target);
+        public List<RecordForm> GetRecordsBy(RecordForm r1, RecordForm r2, ETarget target)
+        {
+            List<RecordForm> records = new List<RecordForm>();
+            try
+            {
+                if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection failed.");
+                RecordForm temp = new RecordForm();
+                switch (target)
+                {
+                    case ETarget.id:
+                        temp.Id = r1.Id;
+                        break;
+                    case ETarget.time:
+                        temp.Date = r1.Date;
+                        break;
+                    case ETarget.title:
+                        temp.Title = r1.Title;
+                        break;
+                    case ETarget.category:
+                        temp.Category = r1.Category;
+                        break;
+                    default:
+                        throw new ArgumentException("Invalid target for retrieval.");
+                }
+                string sql = "SELECT * FROM Ledger1 where record_id between ( @id , @id2 ) || record_date between ( @date , @date2 ) || (record_title = @title || record_title = @title2) || record_category = @category || record_category = @category2 || " +
+                    "record_type = @type || record_type = @type2 ;";
+                using (SqlCommand command = new SqlCommand(sql, _connection))
+                {
+                    command.Parameters.Add("@id", SqlDbType.Int);
+                    command.Parameters.Add("@date", SqlDbType.DateTime);
+                    command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@type", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@id2", SqlDbType.Int);
+                    command.Parameters.Add("@date2", SqlDbType.DateTime);
+                    command.Parameters.Add("@title2", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@category2", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@type2", SqlDbType.NVarChar, 50);
+                    command.Parameters["@id"].Value = temp.Id;
+                    command.Parameters["@date"].Value = temp.Date;
+                    command.Parameters["@title"].Value = temp.Title;
+                    command.Parameters["@category"].Value = temp.Category;
+                    command.Parameters["@type"].Value = temp.EventType ?? "";
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            RecordForm record = new RecordForm
+                            {
+                                Id = Convert.ToInt32(reader["record_id"]),
+                                Date = Convert.ToDateTime(reader["record_date"]),
+                                Title = reader["record_title"].ToString() ?? "",
+                                Category = reader["record_category"].ToString() ?? "",
+                                EventType = reader["record_type"].ToString() ?? "",
+                                Amount = Convert.ToInt32(reader["record_amount"]),
+                                Comment = reader["descript"].ToString() ?? ""
+                            };
+                            records.Add(record);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("GetAllRecords failed." + e.Message);
+            }
+            return records;
+        }
         int GetTotals(RecordForm r);
         void Update(RecordForm r, ETarget target);
     }
