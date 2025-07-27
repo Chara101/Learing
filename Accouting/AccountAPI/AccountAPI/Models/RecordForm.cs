@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AccountAPI.Models
 {
-    internal class RecordForm
+    public class RecordForm
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }

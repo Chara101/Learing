@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AccountAPI.EnumList
 {
-    enum ETarget
+    public enum ETarget
     {
         id,
         time,

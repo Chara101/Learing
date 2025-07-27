@@ -7,7 +7,7 @@
       "RelativeMoniker": "D:0:0:{8266D959-DA6C-433C-A551-E4CB4E80420E}|AccountTest\\AccountTest.csproj|solutionrelative:accounttest\\datastorage\\idatastorage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8266D959-DA6C-433C-A551-E4CB4E80420E}|AccountTest\\AccountTest.csproj|c:\\lab\\github\\learing\\accouting\\accounttest\\accounttest\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{8266D959-DA6C-433C-A551-E4CB4E80420E}|AccountTest\\AccountTest.csproj|C:\\Lab\\Github\\Learing\\Accouting\\AccountTest\\accounttest\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{8266D959-DA6C-433C-A551-E4CB4E80420E}|AccountTest\\AccountTest.csproj|solutionrelative:accounttest\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
@@ -75,8 +75,7 @@
               "ToolTip": "C:\\Lab\\Github\\Learing\\Accouting\\AccountTest\\AccountTest\\Form1.cs [\u8A2D\u8A08]",
               "RelativeToolTip": "AccountTest\\Form1.cs [\u8A2D\u8A08]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-20T02:53:55.587Z",
-              "EditorCaption": " [\u8A2D\u8A08]"
+              "WhenOpened": "2025-07-20T02:53:55.587Z"
             }
           ]
         }

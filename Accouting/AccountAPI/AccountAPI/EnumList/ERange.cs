@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AccountAPI.EnumList
 {
-    enum ERange
+    public enum ERange
     {
         All,
         First

@@ -4,3 +4,4 @@ GET {{AccountAPI_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+//https://localhost:7244/swagger/index.html

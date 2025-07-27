@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using AccountAPI.EnumList;
 using AccountAPI.Models;
-using testAccounting1;
 
 namespace TestAcounting.DataStorage
 {
@@ -51,7 +49,7 @@ namespace TestAcounting.DataStorage
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error retrieving totals: {ex.Message}");
+                Console.WriteLine($"Error retrieving totals: {ex.Message}");
             }
             return result;
         }
@@ -94,7 +92,7 @@ namespace TestAcounting.DataStorage
             }
             catch(Exception ex)
             {
-                MessageBox.Show($"Error adding record: {ex.Message}");
+                Console.WriteLine($"Error adding record: {ex.Message}");
             }
         }
         public void Remove(RecordForm r, ETarget target)
@@ -110,7 +108,7 @@ namespace TestAcounting.DataStorage
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error removing record by title: {ex.Message}");
+                    Console.WriteLine($"Error removing record by title: {ex.Message}");
                 }
             }
             else if (target == ETarget.category)
@@ -124,7 +122,7 @@ namespace TestAcounting.DataStorage
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error removing record by title: {ex.Message}");
+                    Console.WriteLine($"Error removing record by title: {ex.Message}");
                 }
             }
             try
@@ -133,7 +131,7 @@ namespace TestAcounting.DataStorage
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating category totals: {ex.Message}");
+                Console.WriteLine($"Error updating category totals: {ex.Message}");
             }
         }
         public void Remove(RecordForm r, ETarget target1, ETarget target2)
@@ -150,7 +148,7 @@ namespace TestAcounting.DataStorage
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error removing record by title: {ex.Message}");
+                    Console.WriteLine($"Error removing record by title: {ex.Message}");
                 }
             }
         }
@@ -171,7 +169,7 @@ namespace TestAcounting.DataStorage
             }
             catch(Exception ex)
             {
-                MessageBox.Show($"Error retrieving records: {ex.Message}");
+                Console.WriteLine($"Error retrieving records: {ex.Message}");
             }
             return result;
         }
@@ -188,7 +186,7 @@ namespace TestAcounting.DataStorage
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error retrieving records: {ex.Message}");
+                Console.WriteLine($"Error retrieving records: {ex.Message}");
             }
             return result;
         }
@@ -220,7 +218,7 @@ namespace TestAcounting.DataStorage
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating record: {ex.Message}");
+                Console.WriteLine($"Error updating record: {ex.Message}");
             }
         }
     }
