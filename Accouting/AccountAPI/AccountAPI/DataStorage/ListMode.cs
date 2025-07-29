@@ -95,30 +95,27 @@ namespace TestAcounting.DataStorage
                 Console.WriteLine($"Error adding record: {ex.Message}");
             }
         }
-        public void Remove(RecordForm r, ETarget target)
+        public void Remove(RecordForm r)
         {
-            if (target == ETarget.title)
+            List<RecordForm> data = records;
+            int count = 0;
+            if (string.IsNullOrEmpty(r.Title))
             {
                 try
                 {
-                    var data = records.FirstOrDefault(temp => temp.Title == r.Title);
-                    var num = records.Count(temp => temp.Title == r.Title);
-                    if (num == 0 || data is null) throw new ArgumentException("No record found with the specified title.");
-                    records.Remove(data);
+                    data.AddRange(data.Where(temp => temp.Title == r.Title));
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error removing record by title: {ex.Message}");
                 }
+                count++;
             }
-            else if (target == ETarget.category)
+            else if (string.IsNullOrEmpty(r.Category))
             {
                 try
                 {
-                    var data = records.FirstOrDefault(temp => temp.Category == r.Category);
-                    var num = records.Count(temp => temp.Category == r.Category);
-                    if (num == 0 || data is null) throw new ArgumentException("No record found with the specified categoty.");
-                    records.Remove(data);
+                    data.AddRange(data.Where(temp => temp.Category == r.Category));
                 }
                 catch (Exception ex)
                 {
@@ -127,6 +124,8 @@ namespace TestAcounting.DataStorage
             }
             try
             {
+                var temp = data.FirstOrDefault();
+                if(temp is not null) records.Remove(temp);
                 UpdateTotals(r, false);
             }
             catch (Exception ex)
@@ -134,38 +133,20 @@ namespace TestAcounting.DataStorage
                 Console.WriteLine($"Error updating category totals: {ex.Message}");
             }
         }
-        public void Remove(RecordForm r, ETarget target1, ETarget target2)
-        {
-            if (target1 == ETarget.title && target2 == ETarget.category)
-            {
-                try
-                {
-                    var data = records.FirstOrDefault(temp => temp.Title == r.Title && temp.Category == r.Category);
-                    var num = records.Count(temp => temp.Title == r.Title);
-                    if (num == 0 || data is null) throw new ArgumentException("No record found with the specified title.");
-                    records.Remove(data);
-                    UpdateTotals(r, false);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error removing record by title: {ex.Message}");
-                }
-            }
-        }
         public List<RecordForm> GetAllRecords()
         {
             return records;
         }
-        public List<RecordForm> GetRecordsBy(RecordForm r, ETarget target)
+        public List<RecordForm> GetRecordsBy(RecordForm r)
         {
-            List<RecordForm> result = new List<RecordForm>();
+            List<RecordForm> result = records;
             try
             {
-                if(target == ETarget.title) result = records.Where(temp => temp.Title == r.Title).ToList();
-                else if(target == ETarget.category) result = records.Where(temp => temp.Category == r.Category).ToList();
-                else if (target == ETarget.id) result = records.Where(temp => temp.Id == r.Id).ToList();
-                else if (target == ETarget.time) result = records.Where(temp => temp.Date.Date >= r.Date.Date && temp.Date.Date <= DateTime.Now.Date).ToList();
-                else if (target == ETarget.money) result = records.Where(temp => temp.Amount >= r.Amount).ToList();
+                if (r.Id <= 0) result = result.Where(temp => temp.Id == r.Id).ToList();
+                else if (string.IsNullOrEmpty(r.Title)) result = result.Where(temp => temp.Title == r.Title).ToList();
+                else if (string.IsNullOrEmpty(r.Category)) result = result.Where(temp => temp.Category == r.Category).ToList();
+                else if (DateTime.MinValue.Date <= r.Date) result = result.Where(temp => temp.Date.Date >= r.Date.Date && temp.Date.Date <= DateTime.Now.Date).ToList();
+                else if (r.Amount != 0) result = records.Where(temp => temp.Amount >= r.Amount).ToList();
             }
             catch(Exception ex)
             {
@@ -173,16 +154,16 @@ namespace TestAcounting.DataStorage
             }
             return result;
         }
-        public List<RecordForm> GetRecordsBy(RecordForm r1, RecordForm r2, ETarget target)
+        public List<RecordForm> GetRecordsBy(RecordForm r1, RecordForm r2)
         {
-            List<RecordForm> result = new List<RecordForm>();
+            List<RecordForm> result = records;
             try
             {
-                if (target == ETarget.title) result = records.Where(temp => temp.Title == r1.Title || temp.Title == r2.Title).ToList();
-                else if (target == ETarget.category) result = records.Where(temp => temp.Category == r1.Category || temp.Category == r1.Category).ToList();
-                else if (target == ETarget.id) result = records.Where(temp => temp.Id >= r1.Id && temp.Id <= r2.Id).ToList();
-                else if (target == ETarget.time) result = records.Where(temp => (temp.Date.Date >= r1.Date && temp.Date.Date <= r2.Date)).ToList();
-                else if (target == ETarget.money) result = records.Where(temp => temp.Amount >= r1.Amount && temp.Amount >= r2.Amount).ToList();
+                if (string.IsNullOrEmpty(r1.Title) && string.IsNullOrEmpty(r2.Title)) result = result.Where(temp => temp.Title == r1.Title || temp.Title == r2.Title).ToList();
+                else if (string.IsNullOrEmpty(r1.Category) && string.IsNullOrEmpty(r2.Category)) result = result.Where(temp => temp.Category == r1.Category || temp.Category == r1.Category).ToList();
+                else if (r1.Id <= 0 && r2.Id <= 0) result = result.Where(temp => temp.Id >= r1.Id && temp.Id <= r2.Id).ToList();
+                else if (DateTime.MinValue.Date <= r1.Date && r1.Date <= r2.Date) result = result.Where(temp => (temp.Date.Date >= r1.Date && temp.Date.Date <= r2.Date)).ToList();
+                else if (r1.Amount != 0 && r2.Amount >= r1.Amount) result = result.Where(temp => temp.Amount >= r1.Amount && temp.Amount >= r2.Amount).ToList();
             }
             catch (Exception ex)
             {
@@ -192,15 +173,30 @@ namespace TestAcounting.DataStorage
         }
         public void Update(RecordForm r, ETarget target)
         {
-            List<RecordForm> result = new List<RecordForm>();
+            List<RecordForm> result = records;
             try
             {
-                if (target == ETarget.title) result = records.Where(temp => temp.Title == r.Title).ToList();
-                else if (target == ETarget.category) result = records.Where(temp => temp.Category == r.Category).ToList();
-                else if (target == ETarget.id) result = records.Where(temp => temp.Id == r.Id).ToList();
-                else if (target == ETarget.time) result = records.Where(temp => temp.Date.Date >= r.Date.Date && temp.Date.Date <= DateTime.Now.Date).ToList();
-                else if (target == ETarget.money) result = records.Where(temp => temp.Amount >= r.Amount).ToList();
-
+                if (r.Id <= 0) result = result.Where(temp => temp.Id == r.Id).ToList();
+                else if (string.IsNullOrEmpty(r.Title)) result = result.Where(temp => temp.Title == r.Title).ToList();
+                else if (string.IsNullOrEmpty(r.Category)) result = result.Where(temp => temp.Category == r.Category).ToList();
+                else if (DateTime.MinValue.Date <= r.Date) result = result.Where(temp => temp.Date.Date >= r.Date.Date && temp.Date.Date <= DateTime.Now.Date).ToList();
+                else if (r.Amount != 0) result = records.Where(temp => temp.Amount >= r.Amount).ToList();
+                var temp = result.FirstOrDefault();
+                foreach (var record in records)
+                {
+                    if (record.Id == r.Id) // Assuming Id is unique
+                    {
+                        UpdateTotals(record, false);
+                        record.Date = r.Date;
+                        record.Title = r.Title;
+                        record.Category = r.Category;
+                        record.EventType = r.EventType;
+                        record.Amount = r.Amount;
+                        record.Comment = r.Comment;
+                        UpdateTotals(r, true);
+                        break;
+                    }
+                }
                 foreach (var record in result)
                 {
                     if (record.Id == r.Id) // Assuming Id is unique

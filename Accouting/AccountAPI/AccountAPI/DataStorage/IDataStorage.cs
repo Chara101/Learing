@@ -12,12 +12,11 @@ namespace TestAcounting.DataStorage
     {
         void Initialize();
         void Add(RecordForm r);
-        void Remove(RecordForm r, ETarget target);
-        void Remove(RecordForm r, ETarget target1, ETarget target2);
+        void Remove(RecordForm r);
         List<RecordForm> GetAllRecords();
-        List<RecordForm> GetRecordsBy(RecordForm r, ETarget target);
-        List<RecordForm> GetRecordsBy(RecordForm r1, RecordForm r2, ETarget target);
+        List<RecordForm> GetRecordsBy(RecordForm r);
+        List<RecordForm> GetRecordsBy(RecordForm r1, RecordForm r2);
         int GetTotals(RecordForm r);
-        void Update(RecordForm r, ETarget target);
+        void Update(RecordForm r);
     }
 }

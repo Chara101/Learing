@@ -10,6 +10,19 @@ namespace AccountAPI.DataStorage
     public class MssqlCtrl : IDataStorage
     {
         private SqlConnection? _connection;
+        private Dictionary<string, string> _condition = new Dictionary<string, string>()
+        {
+            { "id", "record_id = @id" },
+            { "time", "record_date = @date" },
+            { "title", "record_title = @title" },
+            { "category", "record_category = @category" },
+            { "money", "record_amount = @amount" }
+        };
+
+        private string AddLogic(string org, bool j)
+        {
+            return j ? " and " + org : org;
+        }
         public void Initialize()
         {
             try
@@ -64,41 +77,27 @@ namespace AccountAPI.DataStorage
             try
             {
                 if(_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
-                RecordForm temp = new RecordForm();
-                if(target == ETarget.id) temp.Id = r.Id;
-                else if(target == ETarget.time) temp.Date = r.Date;
-                else if(target == ETarget.title) temp.Title = r.Title;
-                else throw new ArgumentException("Invalid target for removal.");
-                string sql = "delete from Ledger1 where record_id == @id || record_title = @title || record_date <= @date";
+                string sql = "delete from Ledger1 where";
+                int count = 0;
+                //RecordForm temp = new RecordForm();
+                //if(target == ETarget.id) temp.Id = r.Id;
+                //else if(target == ETarget.time) temp.Date = r.Date;
+                //else if(target == ETarget.title) temp.Title = r.Title;
+                //else throw new ArgumentException("Invalid target for removal.");
+                //string sql = "delete from Ledger1 where record_id == @id || record_title = @title || record_date <= @date";
                 using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
+                    if (r.Id > 0)
+                    {
+
+                    }
                     command.Parameters.Add("@id", SqlDbType.Int);
                     command.Parameters.Add("@date", SqlDbType.DateTime);
                     command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
                     command.Parameters["@id"].Value = temp.Id;
                     command.Parameters["@date"].Value = temp.Date;
                     command.Parameters["@title"].Value = temp.Title;
-                    command.ExecuteNonQuery();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Remove failed." + e.Message);
-            }
-        }
-        public void Remove(RecordForm r, ETarget target1, ETarget target2)
-        {
-            try
-            {
-                if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
-                if(target1 != ETarget.title || target2 != ETarget.time) throw new ArgumentException("Invalid target combination for removal.");
-                string sql = "delete from Ledger1 where record_title = @title && record_date <= @date";
-                using (SqlCommand command = new SqlCommand(sql, _connection))
-                {
-                    command.Parameters.Add("@date", SqlDbType.DateTime);
-                    command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
-                    command.Parameters["@date"].Value = r.Date;
-                    command.Parameters["@title"].Value = r.Title;
+                    if(count == 0) throw new ArgumentException("Invalid argument for removal.");
                     command.ExecuteNonQuery();
                 }
             }
