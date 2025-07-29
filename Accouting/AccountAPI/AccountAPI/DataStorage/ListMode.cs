@@ -99,7 +99,7 @@ namespace TestAcounting.DataStorage
         {
             List<RecordForm> data = records;
             int count = 0;
-            if (string.IsNullOrEmpty(r.Title))
+            if (!string.IsNullOrEmpty(r.Title))
             {
                 try
                 {
@@ -111,7 +111,7 @@ namespace TestAcounting.DataStorage
                 }
                 count++;
             }
-            else if (string.IsNullOrEmpty(r.Category))
+            else if (!string.IsNullOrEmpty(r.Category))
             {
                 try
                 {
@@ -143,8 +143,8 @@ namespace TestAcounting.DataStorage
             try
             {
                 if (r.Id <= 0) result = result.Where(temp => temp.Id == r.Id).ToList();
-                else if (string.IsNullOrEmpty(r.Title)) result = result.Where(temp => temp.Title == r.Title).ToList();
-                else if (string.IsNullOrEmpty(r.Category)) result = result.Where(temp => temp.Category == r.Category).ToList();
+                else if (!string.IsNullOrEmpty(r.Title)) result = result.Where(temp => temp.Title == r.Title).ToList();
+                else if (!string.IsNullOrEmpty(r.Category)) result = result.Where(temp => temp.Category == r.Category).ToList();
                 else if (DateTime.MinValue.Date <= r.Date) result = result.Where(temp => temp.Date.Date >= r.Date.Date && temp.Date.Date <= DateTime.Now.Date).ToList();
                 else if (r.Amount != 0) result = records.Where(temp => temp.Amount >= r.Amount).ToList();
             }
@@ -159,8 +159,8 @@ namespace TestAcounting.DataStorage
             List<RecordForm> result = records;
             try
             {
-                if (string.IsNullOrEmpty(r1.Title) && string.IsNullOrEmpty(r2.Title)) result = result.Where(temp => temp.Title == r1.Title || temp.Title == r2.Title).ToList();
-                else if (string.IsNullOrEmpty(r1.Category) && string.IsNullOrEmpty(r2.Category)) result = result.Where(temp => temp.Category == r1.Category || temp.Category == r1.Category).ToList();
+                if (!string.IsNullOrEmpty(r1.Title) && !string.IsNullOrEmpty(r2.Title)) result = result.Where(temp => temp.Title == r1.Title || temp.Title == r2.Title).ToList();
+                else if (!string.IsNullOrEmpty(r1.Category) && !string.IsNullOrEmpty(r2.Category)) result = result.Where(temp => temp.Category == r1.Category || temp.Category == r1.Category).ToList();
                 else if (r1.Id <= 0 && r2.Id <= 0) result = result.Where(temp => temp.Id >= r1.Id && temp.Id <= r2.Id).ToList();
                 else if (DateTime.MinValue.Date <= r1.Date && r1.Date <= r2.Date) result = result.Where(temp => (temp.Date.Date >= r1.Date && temp.Date.Date <= r2.Date)).ToList();
                 else if (r1.Amount != 0 && r2.Amount >= r1.Amount) result = result.Where(temp => temp.Amount >= r1.Amount && temp.Amount >= r2.Amount).ToList();
@@ -171,20 +171,21 @@ namespace TestAcounting.DataStorage
             }
             return result;
         }
-        public void Update(RecordForm r, ETarget target)
+        public void Update(RecordForm r)
         {
             List<RecordForm> result = records;
             try
             {
                 if (r.Id <= 0) result = result.Where(temp => temp.Id == r.Id).ToList();
-                else if (string.IsNullOrEmpty(r.Title)) result = result.Where(temp => temp.Title == r.Title).ToList();
-                else if (string.IsNullOrEmpty(r.Category)) result = result.Where(temp => temp.Category == r.Category).ToList();
+                else if (!string.IsNullOrEmpty(r.Title)) result = result.Where(temp => temp.Title == r.Title).ToList();
+                else if (!string.IsNullOrEmpty(r.Category)) result = result.Where(temp => temp.Category == r.Category).ToList();
                 else if (DateTime.MinValue.Date <= r.Date) result = result.Where(temp => temp.Date.Date >= r.Date.Date && temp.Date.Date <= DateTime.Now.Date).ToList();
                 else if (r.Amount != 0) result = records.Where(temp => temp.Amount >= r.Amount).ToList();
                 var temp = result.FirstOrDefault();
+                if(temp is null) throw new ArgumentException("Record not found for update.");
                 foreach (var record in records)
                 {
-                    if (record.Id == r.Id) // Assuming Id is unique
+                    if (record.Id == temp.Id) // Assuming Id is unique
                     {
                         UpdateTotals(record, false);
                         record.Date = r.Date;
@@ -197,9 +198,9 @@ namespace TestAcounting.DataStorage
                         break;
                     }
                 }
-                foreach (var record in result)
+                foreach (var record in records)
                 {
-                    if (record.Id == r.Id) // Assuming Id is unique
+                    if (record.Id == temp.Id) // Assuming Id is unique
                     {
                         UpdateTotals(record, false);
                         record.Date = r.Date;
