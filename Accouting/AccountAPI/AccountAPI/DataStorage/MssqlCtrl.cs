@@ -79,24 +79,36 @@ namespace AccountAPI.DataStorage
                 if(_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
                 string sql = "delete from Ledger1 where";
                 int count = 0;
-                //RecordForm temp = new RecordForm();
-                //if(target == ETarget.id) temp.Id = r.Id;
-                //else if(target == ETarget.time) temp.Date = r.Date;
-                //else if(target == ETarget.title) temp.Title = r.Title;
-                //else throw new ArgumentException("Invalid target for removal.");
-                //string sql = "delete from Ledger1 where record_id == @id || record_title = @title || record_date <= @date";
                 using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
                     if (r.Id > 0)
                     {
-
+                        command.CommandText += AddLogic(_condition["id"], count > 0);
+                        command.Parameters.Add("@id", SqlDbType.Int);
+                        command.Parameters["@id"].Value = r.Id;
+                        count++;
                     }
-                    command.Parameters.Add("@id", SqlDbType.Int);
-                    command.Parameters.Add("@date", SqlDbType.DateTime);
-                    command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
-                    command.Parameters["@id"].Value = temp.Id;
-                    command.Parameters["@date"].Value = temp.Date;
-                    command.Parameters["@title"].Value = temp.Title;
+                    else if (string.IsNullOrEmpty(r.Title))
+                    {
+                        command.CommandText += AddLogic(_condition["title"], count > 0);
+                        command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
+                        command.Parameters["@title"].Value = r.Title;
+                        count++;
+                    }
+                    else if (r.Date != DateTime.MinValue)
+                    {
+                        command.CommandText += AddLogic(_condition["time"], count > 0);
+                        command.Parameters.Add("@date", SqlDbType.DateTime);
+                        command.Parameters["@date"].Value = r.Date;
+                        count++;
+                    }
+                    else if (!string.IsNullOrEmpty(r.Category))
+                    {
+                        command.CommandText += AddLogic(_condition["category"], count > 0);
+                        command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category"].Value = r.Category;
+                        count++;
+                    }
                     if(count == 0) throw new ArgumentException("Invalid argument for removal.");
                     command.ExecuteNonQuery();
                 }
@@ -146,37 +158,45 @@ namespace AccountAPI.DataStorage
             try
             {
                 if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection failed.");
-                RecordForm temp = new RecordForm();
-                switch (target)
-                {
-                    case ETarget.id:
-                        temp.Id = r.Id;
-                        break;
-                    case ETarget.time:
-                        temp.Date = r.Date;
-                        break;
-                    case ETarget.title:
-                        temp.Title = r.Title;
-                        break;
-                    case ETarget.category:
-                        temp.Category = r.Category;
-                        break;
-                    default:
-                        throw new ArgumentException("Invalid target for retrieval.");
-                }
-                string sql = "SELECT * FROM Ledger1 where record_id = @id || record_date = @date || record_title = @title || record_category = @category || record_type = @type";
+                string sql = "SELECT * FROM Ledger1 where";
+                int count = 0;
                 using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
-                    command.Parameters.Add("@id", SqlDbType.Int);
-                    command.Parameters.Add("@date", SqlDbType.DateTime);
-                    command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
-                    command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
-                    command.Parameters.Add("@type", SqlDbType.NVarChar, 50);
-                    command.Parameters["@id"].Value = temp.Id;
-                    command.Parameters["@date"].Value = temp.Date;
-                    command.Parameters["@title"].Value = temp.Title;
-                    command.Parameters["@category"].Value = temp.Category;
-                    command.Parameters["@type"].Value = temp.EventType ?? "";
+                    if (r.Id <= 0)
+                    {
+                        command.CommandText += AddLogic(_condition["id"], count > 0);
+                        command.Parameters.Add("@id", SqlDbType.Int);
+                        command.Parameters["@id"].Value = r.Id;
+                        count++ ;
+                    }
+                    else if (string.IsNullOrEmpty(r.Title))
+                    {
+                        command.CommandText += AddLogic(_condition["title"], count > 0);
+                        command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
+                        command.Parameters["@title"].Value = r.Title;
+                        count++;
+                    }
+                    else if (r.Date != DateTime.MinValue)
+                    {
+                        command.CommandText += AddLogic(_condition["time"], count > 0);
+                        command.Parameters.Add("@date", SqlDbType.DateTime);
+                        command.Parameters["@date"].Value = r.Date;
+                        count++;
+                    }
+                    else if (!string.IsNullOrEmpty(r.Category))
+                    {
+                        command.CommandText += AddLogic(_condition["category"], count > 0);
+                        command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category"].Value = r.Category;
+                        count++;
+                    }
+                    else if (r.Amount != 0)
+                    {
+                        command.CommandText += AddLogic(_condition["money"], count > 0);
+                        command.Parameters.Add("@amount", SqlDbType.Int);
+                        command.Parameters["@amount"].Value = r.Amount;
+                        count++;
+                    }
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -226,10 +246,45 @@ namespace AccountAPI.DataStorage
                     default:
                         throw new ArgumentException("Invalid target for retrieval.");
                 }
-                string sql = "SELECT * FROM Ledger1 where record_id between ( @id , @id2 ) || record_date between ( @date , @date2 ) || (record_title = @title || record_title = @title2) || record_category = @category || record_category = @category2 || " +
-                    "record_type = @type || record_type = @type2 ;";
+                string sql = "SELECT * FROM Ledger1 where";
+                int count = 0;
                 using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
+                    if (r1.Id <= 0)
+                    {
+                        command.CommandText += AddLogic(_condition["id"], count > 0);
+                        command.Parameters.Add("@id", SqlDbType.Int);
+                        command.Parameters["@id"].Value = r.Id;
+                        count++;
+                    }
+                    else if (string.IsNullOrEmpty(r.Title))
+                    {
+                        command.CommandText += AddLogic(_condition["title"], count > 0);
+                        command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
+                        command.Parameters["@title"].Value = r.Title;
+                        count++;
+                    }
+                    else if (r.Date != DateTime.MinValue)
+                    {
+                        command.CommandText += AddLogic(_condition["time"], count > 0);
+                        command.Parameters.Add("@date", SqlDbType.DateTime);
+                        command.Parameters["@date"].Value = r.Date;
+                        count++;
+                    }
+                    else if (!string.IsNullOrEmpty(r.Category))
+                    {
+                        command.CommandText += AddLogic(_condition["category"], count > 0);
+                        command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category"].Value = r.Category;
+                        count++;
+                    }
+                    else if (r.Amount != 0)
+                    {
+                        command.CommandText += AddLogic(_condition["money"], count > 0);
+                        command.Parameters.Add("@amount", SqlDbType.Int);
+                        command.Parameters["@amount"].Value = r.Amount;
+                        count++;
+                    }
                     command.Parameters.Add("@id", SqlDbType.Int);
                     command.Parameters.Add("@date", SqlDbType.DateTime);
                     command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
