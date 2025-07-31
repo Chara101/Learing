@@ -18,20 +18,35 @@ namespace AccountAPI.DataStorage
             { "category", "record_category = @category" },
             { "money", "record_amount = @amount" }
         };
-        private Dictionary<string, int> _record_totals = new Dictionary<string, int>()
-        {
-            { "收入", 0 },
-            { "費用", 0 },
-            { "資產", 0 },
-            { "負債", 0 },
-            { "權益", 0 }
-        };
         private void Update_totals(RecordForm r, bool pos)
         {
             if (r.Amount > 0)
             {
-                if(pos) _record_totals["money"] += r.Amount;
-                else _record_totals["money"] -= r.Amount;
+                try
+                {
+                    string sql;
+                    if (pos)
+                    {
+                        sql = "update Ledger_Totals set the_total = the_total + @amount where category = @category and type = @type"
+                    }
+                    else{
+                        sql = "update Ledger_Totals set the_total = the_total - @amount where category = @category and type = @type";
+                    }
+                    using (SqlCommand command = new SqlCommand(sql, _connection))
+                    {
+                        command.Parameters.Add("@amount", SqlDbType.Int);
+                        command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+                        command.Parameters.Add("@type", SqlDbType.NVarChar, 50);
+                        command.Parameters["@amount"].Value = r.Amount;
+                        command.Parameters["@category"].Value = r.Category;
+                        command.Parameters["@type"].Value = r.EventType ?? "";
+                        command.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Update_totals failed." + e.Message);
+                }
             }
             else return;
         }
@@ -88,7 +103,7 @@ namespace AccountAPI.DataStorage
                 Console.WriteLine("Add failed." + e.Message);
             }
         }
-        public void Remove(RecordForm r, ETarget target)
+        public void Remove(RecordForm r)
         {
             try
             {
@@ -168,7 +183,7 @@ namespace AccountAPI.DataStorage
             }
             return records;
         }
-        public List<RecordForm> GetRecordsBy(RecordForm r, ETarget target)
+        public List<RecordForm> GetRecordsBy(RecordForm r)
         {
             List<RecordForm> records = new List<RecordForm>();
             try
@@ -336,9 +351,71 @@ namespace AccountAPI.DataStorage
             }
             return result;
         }
-        public void Update(RecordForm r)
+        public void Update(RecordForm target, RecordForm content)
         {
-
-        }
+            try
+            {
+                if(_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
+                string sql = "update Ledger1 set (record_date = @ndate, record_title = @ntitle, record_category = @ncategory, record_type = @ntype, user_name = @nname, record_amount = @namount, descript = @ndescript) where ";
+                int count = 0;
+                using(SqlCommand command = new SqlCommand(sql, _connection))
+                {
+                    if (target.Id <= 0)
+                    {
+                        command.CommandText += AddLogic(_condition["id"], count > 0);
+                        command.Parameters.Add("@id", SqlDbType.Int);
+                        command.Parameters["@id"].Value = target.Id;
+                        count++;
+                    }
+                    else if (!string.IsNullOrEmpty(target.Title))
+                    {
+                        command.CommandText += AddLogic(_condition["title"], count > 0);
+                        command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
+                        command.Parameters["@title"].Value = target.Title;
+                        count++;
+                    }
+                    else if (target.Date != DateTime.MinValue)
+                    {
+                        command.CommandText += AddLogic(_condition["time"], count > 0);
+                        command.Parameters.Add("@date", SqlDbType.DateTime);
+                        command.Parameters["@date"].Value = target.Date;
+                        count++;
+                    }
+                    else if (!string.IsNullOrEmpty(target.Category))
+                    {
+                        command.CommandText += AddLogic(_condition["category"], count > 0);
+                        command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category"].Value = target.Category;
+                        count++;
+                    }
+                    else if (target.Amount != 0)
+                    {
+                        command.CommandText += AddLogic(_condition["money"], count > 0);
+                        command.Parameters.Add("@amount", SqlDbType.Int);
+                        command.Parameters["@amount"].Value = target.Amount;
+                        count++;
+                    }
+                    else throw new ArgumentException("Invalid argument for update.");
+                    command.Parameters.Add("@ndate", SqlDbType.DateTime);
+                    command.Parameters.Add("@ntitle", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@ncategory", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@ntype", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@nname", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@namount", SqlDbType.Int);
+                    command.Parameters.Add("@ndescript", SqlDbType.NVarChar, 50);
+                    command.Parameters["@date"].Value = content.Date;
+                    command.Parameters["@title"].Value = content.Title;
+                    command.Parameters["@category"].Value = content.Category;
+                    command.Parameters["@type"].Value = content.EventType ?? "";
+                    command.Parameters["@name"].Value = content.Title;
+                    command.Parameters["@amount"].Value = content.Amount;
+                    command.Parameters["@descript"].Value = content.Comment ?? "";
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Update failed." + e.Message);
+            }
     }
 }

@@ -171,16 +171,16 @@ namespace TestAcounting.DataStorage
             }
             return result;
         }
-        public void Update(RecordForm r)
+        public void Update(RecordForm target, RecordForm content)
         {
             List<RecordForm> result = records;
             try
             {
-                if (r.Id <= 0) result = result.Where(temp => temp.Id == r.Id).ToList();
-                else if (!string.IsNullOrEmpty(r.Title)) result = result.Where(temp => temp.Title == r.Title).ToList();
-                else if (!string.IsNullOrEmpty(r.Category)) result = result.Where(temp => temp.Category == r.Category).ToList();
-                else if (DateTime.MinValue.Date <= r.Date) result = result.Where(temp => temp.Date.Date >= r.Date.Date && temp.Date.Date <= DateTime.Now.Date).ToList();
-                else if (r.Amount != 0) result = records.Where(temp => temp.Amount >= r.Amount).ToList();
+                if (target.Id <= 0) result = result.Where(temp => temp.Id == target.Id).ToList();
+                else if (!string.IsNullOrEmpty(target.Title)) result = result.Where(temp => temp.Title == target.Title).ToList();
+                else if (!string.IsNullOrEmpty(target.Category)) result = result.Where(temp => temp.Category == target.Category).ToList();
+                else if (DateTime.MinValue.Date <= target.Date) result = result.Where(temp => temp.Date.Date >= target.Date.Date && temp.Date.Date <= DateTime.Now.Date).ToList();
+                else if (target.Amount != 0) result = records.Where(temp => temp.Amount >= target.Amount).ToList();
                 var temp = result.FirstOrDefault();
                 if(temp is null) throw new ArgumentException("Record not found for update.");
                 foreach (var record in records)
@@ -188,28 +188,14 @@ namespace TestAcounting.DataStorage
                     if (record.Id == temp.Id) // Assuming Id is unique
                     {
                         UpdateTotals(record, false);
-                        record.Date = r.Date;
-                        record.Title = r.Title;
-                        record.Category = r.Category;
-                        record.EventType = r.EventType;
-                        record.Amount = r.Amount;
-                        record.Comment = r.Comment;
-                        UpdateTotals(r, true);
+                        record.Date = content.Date;
+                        record.Title = content.Title;
+                        record.Category = content.Category;
+                        record.EventType = content.EventType;
+                        record.Amount = content.Amount;
+                        record.Comment = content.Comment;
+                        UpdateTotals(content, true);
                         break;
-                    }
-                }
-                foreach (var record in records)
-                {
-                    if (record.Id == temp.Id) // Assuming Id is unique
-                    {
-                        UpdateTotals(record, false);
-                        record.Date = r.Date;
-                        record.Title = r.Title;
-                        record.Category = r.Category;
-                        record.EventType = r.EventType;
-                        record.Amount = r.Amount;
-                        record.Comment = r.Comment;
-                        UpdateTotals(r, true);
                     }
                 }
             }
