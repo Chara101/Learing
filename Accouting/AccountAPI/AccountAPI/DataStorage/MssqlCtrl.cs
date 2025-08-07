@@ -18,6 +18,39 @@ namespace AccountAPI.DataStorage
             { "category", "record_category = @category" },
             { "money", "record_amount = @amount" }
         };
+        private void Initialize_Totals(RecordForm r)
+        {
+            try
+            {
+                string sql = "select count(*) from Totals where record_date = GetDate() and category_id = @cid and subcategory_id = @sid";
+                using(var command = new SqlCommand(sql, _connection))
+                {
+                    command.Parameters.Add("@cid", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@sid", SqlDbType.NVarChar, 50);
+                    command.Parameters["@cid"].Value = r.Category;
+                    command.Parameters["@sid"].Value = r.EventType;
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if(!reader.HasRows)
+                        {
+                            sql = "insert into Totals (record_date, category_id, subcategory_id, subcount, subamount) values (GetDate(), @category, @subcategory, 0, 0)";
+                            using(var insertCommand = new SqlCommand(sql, _connection))
+                            {
+                                insertCommand.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+                                insertCommand.Parameters.Add("@subcategory", SqlDbType.NVarChar, 50);
+                                insertCommand.Parameters["@category"].Value = r.Category;
+                                insertCommand.Parameters["@subcategory"].Value = r.EventType;
+                                insertCommand.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Update_totals failed." + e.Message);
+            }
+        }
         private void Update_totals(RecordForm r, bool pos)
         {
             if (r.Amount > 0)
@@ -25,21 +58,22 @@ namespace AccountAPI.DataStorage
                 try
                 {
                     string sql;
+                    Initialize_Totals(r);
                     if (pos)
                     {
-                        sql = "update Ledger_Totals set the_total = the_total + @amount where category = @category and type = @type"
+                        sql = "update Totals set subcount = subcount + 1 , subamount = the_total + @amount where category_id = @cid and subcategory_id = @sid";
                     }
                     else{
-                        sql = "update Ledger_Totals set the_total = the_total - @amount where category = @category and type = @type";
+                        sql = "update Totals set subcount = subcount + 1 , subamount = the_total - @amount where category_id = @cid and subcategory_id = @sid";
                     }
                     using (SqlCommand command = new SqlCommand(sql, _connection))
                     {
                         command.Parameters.Add("@amount", SqlDbType.Int);
-                        command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
-                        command.Parameters.Add("@type", SqlDbType.NVarChar, 50);
+                        command.Parameters.Add("@cid", SqlDbType.NVarChar, 50);
+                        command.Parameters.Add("@sid", SqlDbType.NVarChar, 50);
                         command.Parameters["@amount"].Value = r.Amount;
-                        command.Parameters["@category"].Value = r.Category;
-                        command.Parameters["@type"].Value = r.EventType ?? "";
+                        command.Parameters["@@cid"].Value = r.Category;
+                        command.Parameters["@id"].Value = r.EventType ?? "";
                         command.ExecuteNonQuery();
                     }
                 }
