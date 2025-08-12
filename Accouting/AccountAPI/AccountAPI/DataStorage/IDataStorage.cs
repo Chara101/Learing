@@ -16,7 +16,7 @@ namespace TestAcounting.DataStorage
         List<RecordForm> GetAllRecords();
         List<RecordForm> GetRecordsBy(RecordForm r);
         List<RecordForm> GetRecordsBy(RecordForm r1, RecordForm r2);
-        int GetTotals(RecordForm r);
+        RecordForm GetTotals(RecordForm r);
         void Update(RecordForm tartget, RecordForm content);
     }
 }

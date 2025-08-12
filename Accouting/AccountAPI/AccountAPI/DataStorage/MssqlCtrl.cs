@@ -14,8 +14,8 @@ namespace AccountAPI.DataStorage
         {
             { "id", "record_id = @id" },
             { "time", "record_date = @date" },
-            { "title", "record_title = @title" },
-            { "category", "record_category = @category" },
+            { "category_id", "category_id = @category" },
+            { "subcategory_id", "subcategory_id = @sid"},
             { "money", "record_amount = @amount" }
         };
         private void Initialize_Totals(RecordForm r)
@@ -27,8 +27,8 @@ namespace AccountAPI.DataStorage
                 {
                     command.Parameters.Add("@cid", SqlDbType.NVarChar, 50);
                     command.Parameters.Add("@sid", SqlDbType.NVarChar, 50);
-                    command.Parameters["@cid"].Value = r.Category;
-                    command.Parameters["@sid"].Value = r.EventType;
+                    command.Parameters["@cid"].Value = r.Category_id;
+                    command.Parameters["@sid"].Value = r.SubCategory_id;
                     using (var reader = command.ExecuteReader())
                     {
                         if(!reader.HasRows)
@@ -38,8 +38,8 @@ namespace AccountAPI.DataStorage
                             {
                                 insertCommand.Parameters.Add("@category", SqlDbType.NVarChar, 50);
                                 insertCommand.Parameters.Add("@subcategory", SqlDbType.NVarChar, 50);
-                                insertCommand.Parameters["@category"].Value = r.Category;
-                                insertCommand.Parameters["@subcategory"].Value = r.EventType;
+                                insertCommand.Parameters["@category"].Value = r.Category_id;
+                                insertCommand.Parameters["@subcategory"].Value = r.SubCategory_id;
                                 insertCommand.ExecuteNonQuery();
                             }
                         }
@@ -61,19 +61,19 @@ namespace AccountAPI.DataStorage
                     Initialize_Totals(r);
                     if (pos)
                     {
-                        sql = "update Totals set subcount = subcount + 1 , subamount = the_total + @amount where category_id = @cid and subcategory_id = @sid";
+                        sql = "update Totals set subcount = subcount + 1 , subamount = the_total + @amount where category_id = @tcid and subcategory_id = @tsid";
                     }
                     else{
-                        sql = "update Totals set subcount = subcount + 1 , subamount = the_total - @amount where category_id = @cid and subcategory_id = @sid";
+                        sql = "update Totals set subcount = subcount + 1 , subamount = the_total - @amount where category_id = @tcid and subcategory_id = @tsid";
                     }
                     using (SqlCommand command = new SqlCommand(sql, _connection))
                     {
                         command.Parameters.Add("@amount", SqlDbType.Int);
-                        command.Parameters.Add("@cid", SqlDbType.NVarChar, 50);
-                        command.Parameters.Add("@sid", SqlDbType.NVarChar, 50);
+                        command.Parameters.Add("@tcid", SqlDbType.NVarChar, 50);
+                        command.Parameters.Add("@tsid", SqlDbType.NVarChar, 50);
                         command.Parameters["@amount"].Value = r.Amount;
-                        command.Parameters["@@cid"].Value = r.Category;
-                        command.Parameters["@id"].Value = r.EventType ?? "";
+                        command.Parameters["@tcid"].Value = r.Category_id;
+                        command.Parameters["@tsid"].Value = r.SubCategory_id;
                         command.ExecuteNonQuery();
                     }
                 }
@@ -112,25 +112,20 @@ namespace AccountAPI.DataStorage
             try
             {
                 if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
-                string sql = "INSERT INTO Ledger1 (record_date, record_title, record_category, record_type, user_name, record_amount, descript) VALUES (@date, @title, @category, @type, @name, @amount, @descript)";
+                string sql = "insert into Record (record_date, category_id, subcategory_id, record_amount, description) values (GetDate(), @cid, @scid, @amount, @comment);";
                 using(SqlCommand command = new SqlCommand(sql, _connection))
                 {
-                    command.Parameters.Add("@date", SqlDbType.DateTime);
-                    command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
-                    command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
-                    command.Parameters.Add("@type", SqlDbType.NVarChar, 50);
-                    command.Parameters.Add("@name", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@cid", SqlDbType.Int);
+                    command.Parameters.Add("@scid", SqlDbType.Int);
                     command.Parameters.Add("@amount", SqlDbType.Int);
-                    command.Parameters.Add("@descript", SqlDbType.NVarChar, 50);
-                    command.Parameters["@date"].Value = r.Date;
-                    command.Parameters["@title"].Value = r.Title;
-                    command.Parameters["@category"].Value = r.Category;
-                    command.Parameters["@type"].Value = r.EventType ?? "";
-                    command.Parameters["@name"].Value = r.Title;
+                    command.Parameters.Add("@comment", SqlDbType.NVarChar, 50);
+                    command.Parameters["@cid"].Value = r.Category_id;
+                    command.Parameters["@scid"].Value = r.SubCategory_id;
                     command.Parameters["@amount"].Value = r.Amount;
-                    command.Parameters["@descript"].Value = r.Comment ?? "";
+                    command.Parameters["@comment"].Value = r.Comment ?? "";
                     command.ExecuteNonQuery();
                 }
+
             }
             catch (Exception e)
             {
@@ -142,7 +137,7 @@ namespace AccountAPI.DataStorage
             try
             {
                 if(_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
-                string sql = "delete from Ledger1 where";
+                string sql = "delete from Record where";
                 int count = 0;
                 using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
@@ -153,26 +148,26 @@ namespace AccountAPI.DataStorage
                         command.Parameters["@id"].Value = r.Id;
                         count++;
                     }
-                    else if (!string.IsNullOrEmpty(r.Title))
-                    {
-                        command.CommandText += AddLogic(_condition["title"], count > 0);
-                        command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
-                        command.Parameters["@title"].Value = r.Title;
-                        count++;
-                    }
-                    else if (r.Date != DateTime.MinValue)
+                    if (r.Date != DateTime.MinValue)
                     {
                         command.CommandText += AddLogic(_condition["time"], count > 0);
                         command.Parameters.Add("@date", SqlDbType.DateTime);
                         command.Parameters["@date"].Value = r.Date;
                         count++;
                     }
-                    else if (!string.IsNullOrEmpty(r.Category))
+                    if (r.Category_id != 0)
                     {
-                        command.CommandText += AddLogic(_condition["category"], count > 0);
-                        command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
-                        command.Parameters["@category"].Value = r.Category;
+                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
+                        command.Parameters.Add("@category_id", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category_id"].Value = r.Category;
                         count++;
+                        if(r.SubCategory_id != 0)
+                        {
+                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
+                            command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
+                            command.Parameters["@subcategory_id"].Value = r.SubCategory;
+                            count++;
+                        }
                     }
                     if(count == 0) throw new ArgumentException("Invalid argument for removal.");
                     command.ExecuteNonQuery();
@@ -189,7 +184,7 @@ namespace AccountAPI.DataStorage
             try
             {
                 if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection failed.");
-                string sql = "SELECT * FROM Ledger1";
+                string sql = "SELECT * FROM Record";
                 using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
                     using(SqlDataReader reader = command.ExecuteReader())
@@ -200,9 +195,10 @@ namespace AccountAPI.DataStorage
                             {
                                 Id = Convert.ToInt32(reader["record_id"]),
                                 Date = Convert.ToDateTime(reader["record_date"]),
-                                Title = reader["record_title"].ToString() ?? "",
+                                Category_id = Convert.ToInt32(reader["category_id"]),
                                 Category = reader["record_category"].ToString() ?? "",
-                                EventType = reader["record_type"].ToString() ?? "",
+                                SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
+                                SubCategory = reader["record_subcategory"].ToString() ?? "",
                                 Amount = Convert.ToInt32(reader["record_amount"]),
                                 Comment = reader["descript"].ToString() ?? ""
                             };
@@ -223,7 +219,8 @@ namespace AccountAPI.DataStorage
             try
             {
                 if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection failed.");
-                string sql = "SELECT * FROM Ledger1 where";
+                string sql = "SELECT * FROM Record as R where";
+                string sql2 = "join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
                 int count = 0;
                 using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
@@ -234,34 +231,36 @@ namespace AccountAPI.DataStorage
                         command.Parameters["@id"].Value = r.Id;
                         count++ ;
                     }
-                    else if (!string.IsNullOrEmpty(r.Title))
-                    {
-                        command.CommandText += AddLogic(_condition["title"], count > 0);
-                        command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
-                        command.Parameters["@title"].Value = r.Title;
-                        count++;
-                    }
-                    else if (r.Date != DateTime.MinValue)
+                    if (r.Date != DateTime.MinValue)
                     {
                         command.CommandText += AddLogic(_condition["time"], count > 0);
                         command.Parameters.Add("@date", SqlDbType.DateTime);
                         command.Parameters["@date"].Value = r.Date;
                         count++;
                     }
-                    else if (!string.IsNullOrEmpty(r.Category))
+                    if (!string.IsNullOrEmpty(r.Category))
                     {
-                        command.CommandText += AddLogic(_condition["category"], count > 0);
-                        command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
-                        command.Parameters["@category"].Value = r.Category;
+                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
+                        command.Parameters.Add("@category_id", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category_id"].Value = r.Category;
                         count++;
+                        if(r.SubCategory_id != 0)
+                        {
+                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
+                            command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
+                            command.Parameters["@subcategory_id"].Value = r.SubCategory;
+                            count++;
+                        }
                     }
-                    else if (r.Amount != 0)
+                    if (r.Amount != 0)
                     {
                         command.CommandText += AddLogic(_condition["money"], count > 0);
                         command.Parameters.Add("@amount", SqlDbType.Int);
                         command.Parameters["@amount"].Value = r.Amount;
                         count++;
                     }
+                    if (count == 0) throw new ArgumentException("Invalid argument for search.");
+                    command.CommandText += sql2;
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -270,9 +269,10 @@ namespace AccountAPI.DataStorage
                             {
                                 Id = Convert.ToInt32(reader["record_id"]),
                                 Date = Convert.ToDateTime(reader["record_date"]),
-                                Title = reader["record_title"].ToString() ?? "",
-                                Category = reader["record_category"].ToString() ?? "",
-                                EventType = reader["record_type"].ToString() ?? "",
+                                Category_id = Convert.ToInt32(reader["category_id"]),
+                                Category = reader["category_name"].ToString() ?? "",
+                                SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
+                                SubCategory = reader["subcategory_name"].ToString() ?? "",
                                 Amount = Convert.ToInt32(reader["record_amount"]),
                                 Comment = reader["descript"].ToString() ?? ""
                             };
@@ -293,7 +293,8 @@ namespace AccountAPI.DataStorage
             try
             {
                 if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection failed.");
-                string sql = "SELECT * FROM Ledger1 where";
+                string sql = "SELECT * FROM Record where";
+                string sql2 = "join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
                 int count = 0;
                 using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
@@ -307,17 +308,7 @@ namespace AccountAPI.DataStorage
                         command.Parameters["@id2"].Value = r2.Id;
                         count++;
                     }
-                    else if (!string.IsNullOrEmpty(r1.Title) && !string.IsNullOrEmpty(r2.Title))
-                    {
-                        command.CommandText += AddLogic(_condition["title"], count > 0);
-                        command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
-                        command.Parameters["@title"].Value = r1.Title;
-                        command.CommandText += AddLogic(_condition["title"] + "2", count > 0);
-                        command.Parameters.Add("@title2", SqlDbType.NVarChar, 50);
-                        command.Parameters["@title2"].Value = r2.Title;
-                        count++;
-                    }
-                    else if (DateTime.MinValue.Date <= r1.Date && r1.Date <= r2.Date)
+                    if (DateTime.MinValue.Date <= r1.Date && r1.Date <= r2.Date)
                     {
                         command.CommandText += AddLogic(_condition["time"], count > 0);
                         command.Parameters.Add("@date", SqlDbType.DateTime);
@@ -327,17 +318,27 @@ namespace AccountAPI.DataStorage
                         command.Parameters["@date2"].Value = r2.Date;
                         count++;
                     }
-                    else if (!string.IsNullOrEmpty(r1.Category) && !string.IsNullOrEmpty(r2.Category))
+                    if (r1.Category_id != 0 && r2.Category_id != 0)
                     {
-                        command.CommandText += AddLogic(_condition["category"], count > 0);
+                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
                         command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
                         command.Parameters["@category"].Value = r1.Category;
-                        command.CommandText += AddLogic(_condition["category"] + "2", count > 0);
-                        command.Parameters.Add("@category2", SqlDbType.NVarChar, 50);
-                        command.Parameters["@category2"].Value = r2.Category;
+                        command.CommandText += AddLogic(_condition["category_id"] + "2", count > 0);
+                        command.Parameters.Add("@category_id2", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category_id2"].Value = r2.Category;
                         count++;
+                        if (r1.SubCategory_id != 0 && r2.SubCategory_id != 0)
+                        {
+                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
+                            command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
+                            command.Parameters["@subcategory_id"].Value = r1.SubCategory;
+                            command.CommandText += AddLogic(_condition["subcategory_id"] + "2", count > 0);
+                            command.Parameters.Add("@subcategory_id2", SqlDbType.NVarChar, 50);
+                            command.Parameters["@subcategory_id2"].Value = r2.SubCategory;
+                            count++;
+                        }
                     }
-                    else if (r1.Amount != 0 && r2.Amount >= r1.Amount)
+                    if (r1.Amount != 0 && r2.Amount >= r1.Amount)
                     {
                         command.CommandText += AddLogic(_condition["money"], count > 0);
                         command.Parameters.Add("@amount", SqlDbType.Int);
@@ -355,9 +356,10 @@ namespace AccountAPI.DataStorage
                             {
                                 Id = Convert.ToInt32(reader["record_id"]),
                                 Date = Convert.ToDateTime(reader["record_date"]),
-                                Title = reader["record_title"].ToString() ?? "",
-                                Category = reader["record_category"].ToString() ?? "",
-                                EventType = reader["record_type"].ToString() ?? "",
+                                Category_id = Convert.ToInt32(reader["category_id"]),
+                                Category = reader["category_name"].ToString() ?? "",
+                                SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
+                                SubCategory = reader["subcategory_name"].ToString() ?? "",
                                 Amount = Convert.ToInt32(reader["record_amount"]),
                                 Comment = reader["descript"].ToString() ?? ""
                             };
@@ -372,78 +374,114 @@ namespace AccountAPI.DataStorage
             }
             return records;
         }
-        public int GetTotals(RecordForm r)
+        public RecordForm GetTotals(RecordForm r)
         {
-            int result = 0;
+            RecordForm totals = new RecordForm();
+            string sql = "select Sum(subcount) as times, Sum(sub_amount) as amount from Totals";
+            int count = 0;
             try
             {
-
+                using(var command = new SqlCommand(sql, _connection))
+                {
+                    if (r.Date != DateTime.MinValue)
+                    {
+                        command.CommandText += AddLogic(_condition["time"], count > 0);
+                        command.Parameters.Add("@date", SqlDbType.DateTime);
+                        command.Parameters["@date"].Value = r.Date;
+                        count++;
+                    }
+                    if (!string.IsNullOrEmpty(r.Category))
+                    {
+                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
+                        command.Parameters.Add("@category_id", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category_id"].Value = r.Category;
+                        count++;
+                        if (r.SubCategory_id != 0)
+                        {
+                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
+                            command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
+                            command.Parameters["@subcategory_id"].Value = r.SubCategory;
+                            count++;
+                        }
+                    }
+                    if (r.Amount != 0)
+                    {
+                        command.CommandText += AddLogic(_condition["money"], count > 0);
+                        command.Parameters.Add("@amount", SqlDbType.Int);
+                        command.Parameters["@amount"].Value = r.Amount;
+                        count++;
+                    }
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            totals.SubCount = Convert.ToInt32(reader["times"]);
+                            totals.SubAmount = Convert.ToInt32(reader["amount"]);
+                        }
+                    }
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine("GetTotals failed." + e.Message);
             }
-            return result;
+            return totals;
         }
-        public void Update(RecordForm target, RecordForm content)
+        public void Update(RecordForm r, RecordForm content)
         {
             try
             {
                 if(_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
-                string sql = "update Ledger1 set (record_date = @ndate, record_title = @ntitle, record_category = @ncategory, record_type = @ntype, user_name = @nname, record_amount = @namount, descript = @ndescript) where ";
+                string sql = "update Record set (record_date = @ndate, category_id = @ncategory_id, subcategory_id = @nsubcategory_id, record_amount = @namount, description = @ndescription) where ";
                 int count = 0;
                 using(SqlCommand command = new SqlCommand(sql, _connection))
                 {
-                    if (target.Id <= 0)
+                    if (r.Id <= 0)
                     {
                         command.CommandText += AddLogic(_condition["id"], count > 0);
                         command.Parameters.Add("@id", SqlDbType.Int);
-                        command.Parameters["@id"].Value = target.Id;
+                        command.Parameters["@id"].Value = r.Id;
                         count++;
                     }
-                    else if (!string.IsNullOrEmpty(target.Title))
-                    {
-                        command.CommandText += AddLogic(_condition["title"], count > 0);
-                        command.Parameters.Add("@title", SqlDbType.NVarChar, 50);
-                        command.Parameters["@title"].Value = target.Title;
-                        count++;
-                    }
-                    else if (target.Date != DateTime.MinValue)
+                    if (r.Date != DateTime.MinValue)
                     {
                         command.CommandText += AddLogic(_condition["time"], count > 0);
                         command.Parameters.Add("@date", SqlDbType.DateTime);
-                        command.Parameters["@date"].Value = target.Date;
+                        command.Parameters["@date"].Value = r.Date;
                         count++;
                     }
-                    else if (!string.IsNullOrEmpty(target.Category))
+                    if (!string.IsNullOrEmpty(r.Category))
                     {
-                        command.CommandText += AddLogic(_condition["category"], count > 0);
-                        command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
-                        command.Parameters["@category"].Value = target.Category;
+                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
+                        command.Parameters.Add("@category_id", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category_id"].Value = r.Category;
                         count++;
+                        if (r.SubCategory_id != 0)
+                        {
+                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
+                            command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
+                            command.Parameters["@subcategory_id"].Value = r.SubCategory;
+                            count++;
+                        }
                     }
-                    else if (target.Amount != 0)
+                    if (r.Amount != 0)
                     {
                         command.CommandText += AddLogic(_condition["money"], count > 0);
                         command.Parameters.Add("@amount", SqlDbType.Int);
-                        command.Parameters["@amount"].Value = target.Amount;
+                        command.Parameters["@amount"].Value = r.Amount;
                         count++;
                     }
                     else throw new ArgumentException("Invalid argument for update.");
                     command.Parameters.Add("@ndate", SqlDbType.DateTime);
-                    command.Parameters.Add("@ntitle", SqlDbType.NVarChar, 50);
-                    command.Parameters.Add("@ncategory", SqlDbType.NVarChar, 50);
-                    command.Parameters.Add("@ntype", SqlDbType.NVarChar, 50);
-                    command.Parameters.Add("@nname", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@ncategory_id", SqlDbType.NVarChar, 50);
+                    command.Parameters.Add("@nsubcategory_id", SqlDbType.NVarChar, 50);
                     command.Parameters.Add("@namount", SqlDbType.Int);
                     command.Parameters.Add("@ndescript", SqlDbType.NVarChar, 50);
-                    command.Parameters["@date"].Value = content.Date;
-                    command.Parameters["@title"].Value = content.Title;
-                    command.Parameters["@category"].Value = content.Category;
-                    command.Parameters["@type"].Value = content.EventType ?? "";
-                    command.Parameters["@name"].Value = content.Title;
-                    command.Parameters["@amount"].Value = content.Amount;
-                    command.Parameters["@descript"].Value = content.Comment ?? "";
+                    command.Parameters["@ndate"].Value = content.Date;
+                    command.Parameters["@ncategory"].Value = content.Category_id;
+                    command.Parameters["@nsubcategory"].Value = content.SubCategory_id;
+                    command.Parameters["@namount"].Value = content.Amount;
+                    command.Parameters["@ndescription"].Value = content.Comment ?? "";
                     command.ExecuteNonQuery();
                 }
             }
