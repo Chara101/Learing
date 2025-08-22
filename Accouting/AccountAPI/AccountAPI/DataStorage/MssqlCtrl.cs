@@ -294,7 +294,7 @@ namespace AccountAPI.DataStorage
             {
                 if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection failed.");
                 string sql = "SELECT * FROM Record where";
-                string sql2 = "join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
+                string sql2 = " join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
                 int count = 0;
                 using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
@@ -348,6 +348,7 @@ namespace AccountAPI.DataStorage
                         command.Parameters["@amount2"].Value = r2.Amount;
                         count++;
                     }
+                    sql += sql2;
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -431,44 +432,44 @@ namespace AccountAPI.DataStorage
         {
             try
             {
-                if(_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
+                if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
                 string sql = "update Record set (record_date = @ndate, category_id = @ncategory_id, subcategory_id = @nsubcategory_id, record_amount = @namount, description = @ndescription) where ";
                 int count = 0;
-                using(SqlCommand command = new SqlCommand(sql, _connection))
+                using (SqlCommand command = new SqlCommand(sql, _connection))
                 {
                     if (r.Id <= 0)
                     {
-                        command.CommandText += AddLogic(_condition["id"], count > 0);
-                        command.Parameters.Add("@id", SqlDbType.Int);
-                        command.Parameters["@id"].Value = r.Id;
+                        command.CommandText += AddLogic(_condition["id"] + "2", count > 0);
+                        command.Parameters.Add("@id" + "2", SqlDbType.Int);
+                        command.Parameters["@id" + "2"].Value = r.Id;
                         count++;
                     }
                     if (r.Date != DateTime.MinValue)
                     {
-                        command.CommandText += AddLogic(_condition["time"], count > 0);
-                        command.Parameters.Add("@date", SqlDbType.DateTime);
-                        command.Parameters["@date"].Value = r.Date;
+                        command.CommandText += AddLogic(_condition["time"] + "2", count > 0);
+                        command.Parameters.Add("@date" + "2", SqlDbType.DateTime);
+                        command.Parameters["@date" + "2"].Value = r.Date;
                         count++;
                     }
                     if (!string.IsNullOrEmpty(r.Category))
                     {
-                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
-                        command.Parameters.Add("@category_id", SqlDbType.NVarChar, 50);
-                        command.Parameters["@category_id"].Value = r.Category;
+                        command.CommandText += AddLogic(_condition["category_id"] + "2", count > 0);
+                        command.Parameters.Add("@category_id" + "2", SqlDbType.NVarChar, 50);
+                        command.Parameters["@category_id" + "2"].Value = r.Category;
                         count++;
                         if (r.SubCategory_id != 0)
                         {
-                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
-                            command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
-                            command.Parameters["@subcategory_id"].Value = r.SubCategory;
+                            command.CommandText += AddLogic(_condition["subcategory_id"] + "2", count > 0);
+                            command.Parameters.Add("@subcategory_id" + "2", SqlDbType.NVarChar, 50);
+                            command.Parameters["@subcategory_id" + "2"].Value = r.SubCategory;
                             count++;
                         }
                     }
                     if (r.Amount != 0)
                     {
-                        command.CommandText += AddLogic(_condition["money"], count > 0);
-                        command.Parameters.Add("@amount", SqlDbType.Int);
-                        command.Parameters["@amount"].Value = r.Amount;
+                        command.CommandText += AddLogic(_condition["money"] + "2", count > 0);
+                        command.Parameters.Add("@amount" + "2", SqlDbType.Int);
+                        command.Parameters["@amount" + "2"].Value = r.Amount;
                         count++;
                     }
                     else throw new ArgumentException("Invalid argument for update.");
@@ -489,5 +490,6 @@ namespace AccountAPI.DataStorage
             {
                 Console.WriteLine("Update failed." + e.Message);
             }
+        }
     }
 }
