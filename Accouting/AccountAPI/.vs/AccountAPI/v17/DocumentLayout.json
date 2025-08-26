@@ -11,6 +11,10 @@
       "RelativeMoniker": "D:0:0:{587492EE-0D6B-4522-AEDC-CF191F880EA1}|AccountAPI\\AccountAPI.csproj|solutionrelative:accountapi\\models\\recordform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{587492EE-0D6B-4522-AEDC-CF191F880EA1}|AccountAPI\\AccountAPI.csproj|c:\\lab\\github\\learing\\accouting\\accountapi\\accountapi\\datastorage\\idatastorage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{587492EE-0D6B-4522-AEDC-CF191F880EA1}|AccountAPI\\AccountAPI.csproj|solutionrelative:accountapi\\datastorage\\idatastorage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{587492EE-0D6B-4522-AEDC-CF191F880EA1}|AccountAPI\\AccountAPI.csproj|c:\\lab\\github\\learing\\accouting\\accountapi\\accountapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{587492EE-0D6B-4522-AEDC-CF191F880EA1}|AccountAPI\\AccountAPI.csproj|solutionrelative:accountapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -22,8 +26,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IDataStorage.cs",
+              "DocumentMoniker": "C:\\Lab\\Github\\Learing\\Accouting\\AccountAPI\\AccountAPI\\DataStorage\\IDataStorage.cs",
+              "RelativeDocumentMoniker": "AccountAPI\\DataStorage\\IDataStorage.cs",
+              "ToolTip": "C:\\Lab\\Github\\Learing\\Accouting\\AccountAPI\\AccountAPI\\DataStorage\\IDataStorage.cs",
+              "RelativeToolTip": "AccountAPI\\DataStorage\\IDataStorage.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-26T00:17:10.846Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 1,
@@ -34,7 +51,8 @@
               "RelativeToolTip": "AccountAPI\\Models\\RecordForm.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-07T04:05:48.297Z"
+              "WhenOpened": "2025-08-07T04:05:48.297Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -44,14 +62,14 @@
               "RelativeDocumentMoniker": "AccountAPI\\DataStorage\\MssqlCtrl.cs",
               "ToolTip": "C:\\Lab\\Github\\Learing\\Accouting\\AccountAPI\\AccountAPI\\DataStorage\\MssqlCtrl.cs",
               "RelativeToolTip": "AccountAPI\\DataStorage\\MssqlCtrl.cs",
-              "ViewState": "AgIAACsAAAAAAAAAAAAQwDUAAAArAAAAAAAAAA==",
+              "ViewState": "AgIAAEwAAAAAAAAAAAAQwPEBAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-04T14:49:14.742Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Lab\\Github\\Learing\\Accouting\\AccountAPI\\AccountAPI\\Program.cs",
               "RelativeDocumentMoniker": "AccountAPI\\Program.cs",

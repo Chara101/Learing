@@ -18,63 +18,71 @@ namespace AccountAPI.DataStorage
             { "subcategory_id", "subcategory_id = @sid"},
             { "money", "record_amount = @amount" }
         };
-        private void Initialize_Totals(RecordForm r)
-        {
-            try
-            {
-                string sql = "select count(*) from Totals where record_date = GetDate() and category_id = @cid and subcategory_id = @sid";
-                using(var command = new SqlCommand(sql, _connection))
-                {
-                    command.Parameters.Add("@cid", SqlDbType.NVarChar, 50);
-                    command.Parameters.Add("@sid", SqlDbType.NVarChar, 50);
-                    command.Parameters["@cid"].Value = r.Category_id;
-                    command.Parameters["@sid"].Value = r.SubCategory_id;
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if(!reader.HasRows)
-                        {
-                            sql = "insert into Totals (record_date, category_id, subcategory_id, subcount, subamount) values (GetDate(), @category, @subcategory, 0, 0)";
-                            using(var insertCommand = new SqlCommand(sql, _connection))
-                            {
-                                insertCommand.Parameters.Add("@category", SqlDbType.NVarChar, 50);
-                                insertCommand.Parameters.Add("@subcategory", SqlDbType.NVarChar, 50);
-                                insertCommand.Parameters["@category"].Value = r.Category_id;
-                                insertCommand.Parameters["@subcategory"].Value = r.SubCategory_id;
-                                insertCommand.ExecuteNonQuery();
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Update_totals failed." + e.Message);
-            }
-        }
+        //private void Initialize_Totals(RecordForm r)
+        //{
+        //    try
+        //    {
+        //        string sql = "select count(*) from Totals where record_date = GetDate() and category_id = @cid and subcategory_id = @sid";
+        //        using(var command = new SqlCommand(sql, _connection))
+        //        {
+        //            command.Parameters.Add("@cid", SqlDbType.NVarChar, 50);
+        //            command.Parameters.Add("@sid", SqlDbType.NVarChar, 50);
+        //            command.Parameters["@cid"].Value = r.Category_id;
+        //            command.Parameters["@sid"].Value = r.SubCategory_id;
+        //            using (var reader = command.ExecuteReader())
+        //            {
+        //                if(!reader.HasRows)
+        //                {
+        //                    sql = "insert into Totals (record_date, category_id, subcategory_id, subcount, subamount) values (GetDate(), @category, @subcategory, 0, 0)";
+        //                    using(var insertCommand = new SqlCommand(sql, _connection))
+        //                    {
+        //                        insertCommand.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+        //                        insertCommand.Parameters.Add("@subcategory", SqlDbType.NVarChar, 50);
+        //                        insertCommand.Parameters["@category"].Value = r.Category_id;
+        //                        insertCommand.Parameters["@subcategory"].Value = r.SubCategory_id;
+        //                        insertCommand.ExecuteNonQuery();
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine("Update_totals failed." + e.Message);
+        //    }
+        //}
         private void Update_totals(RecordForm r, bool pos)
         {
             if (r.Amount > 0)
             {
                 try
                 {
-                    string sql;
-                    Initialize_Totals(r);
-                    if (pos)
+                    string sql = "update Totals set subcount = subcount + 1 , subamount = the_total + @amount where category_id = @tcid and subcategory_id = @tsid";
+                    int affect_row = 0;
+                    while(affect_row == 0)
                     {
-                        sql = "update Totals set subcount = subcount + 1 , subamount = the_total + @amount where category_id = @tcid and subcategory_id = @tsid";
-                    }
-                    else{
-                        sql = "update Totals set subcount = subcount + 1 , subamount = the_total - @amount where category_id = @tcid and subcategory_id = @tsid";
-                    }
-                    using (SqlCommand command = new SqlCommand(sql, _connection))
-                    {
-                        command.Parameters.Add("@amount", SqlDbType.Int);
-                        command.Parameters.Add("@tcid", SqlDbType.NVarChar, 50);
-                        command.Parameters.Add("@tsid", SqlDbType.NVarChar, 50);
-                        command.Parameters["@amount"].Value = r.Amount;
-                        command.Parameters["@tcid"].Value = r.Category_id;
-                        command.Parameters["@tsid"].Value = r.SubCategory_id;
-                        command.ExecuteNonQuery();
+                        using (SqlCommand command = new SqlCommand(sql, _connection))
+                        {
+                            command.Parameters.Add("@amount", SqlDbType.Int);
+                            command.Parameters.Add("@tcid", SqlDbType.NVarChar, 50);
+                            command.Parameters.Add("@tsid", SqlDbType.NVarChar, 50);
+                            command.Parameters["@amount"].Value = pos ? r.Amount : r.Amount * -1;
+                            command.Parameters["@tcid"].Value = r.Category_id;
+                            command.Parameters["@tsid"].Value = r.SubCategory_id;
+                            affect_row = command.ExecuteNonQuery();
+                        }
+                        if (affect_row == 0)
+                        {
+                            string sql2 = "insert into Totals (category_id, subcategory_id) values ( @category, @subcategory)";
+                            using (SqlCommand command2 = new SqlCommand(sql2, _connection))
+                            {
+                                command2.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+                                command2.Parameters.Add("@subcategory", SqlDbType.NVarChar, 50);
+                                command2.Parameters["@category"].Value = r.Category_id;
+                                command2.Parameters["@subcategory"].Value = r.SubCategory_id;
+                                command2.ExecuteNonQuery();
+                            }
+                        }
                     }
                 }
                 catch (Exception e)
@@ -124,6 +132,7 @@ namespace AccountAPI.DataStorage
                     command.Parameters["@amount"].Value = r.Amount;
                     command.Parameters["@comment"].Value = r.Comment ?? "";
                     command.ExecuteNonQuery();
+                    Update_totals(r, true); //之後加上交易紀錄成功才更新統計資料
                 }
 
             }
@@ -171,6 +180,7 @@ namespace AccountAPI.DataStorage
                     }
                     if(count == 0) throw new ArgumentException("Invalid argument for removal.");
                     command.ExecuteNonQuery();
+                    Update_totals(r, false);
                 }
             }
             catch (Exception e)
@@ -484,6 +494,8 @@ namespace AccountAPI.DataStorage
                     command.Parameters["@namount"].Value = content.Amount;
                     command.Parameters["@ndescription"].Value = content.Comment ?? "";
                     command.ExecuteNonQuery();
+                    Update_totals(r, false);
+                    Update_totals(content, true);
                 }
             }
             catch (Exception e)
