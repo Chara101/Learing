@@ -9,7 +9,6 @@ namespace AccountAPI.DataStorage
 {
     public class MssqlCtrl : IDataStorage
     {
-        private SqlConnection? _connection;
         private Dictionary<string, string> _condition = new Dictionary<string, string>()
         {
             { "id", "record_id = @id" },
@@ -18,85 +17,63 @@ namespace AccountAPI.DataStorage
             { "subcategory_id", "subcategory_id = @sid"},
             { "money", "record_amount = @amount" }
         };
-        //private void Initialize_Totals(RecordForm r)
-        //{
-        //    try
-        //    {
-        //        string sql = "select count(*) from Totals where record_date = GetDate() and category_id = @cid and subcategory_id = @sid";
-        //        using(var command = new SqlCommand(sql, _connection))
-        //        {
-        //            command.Parameters.Add("@cid", SqlDbType.NVarChar, 50);
-        //            command.Parameters.Add("@sid", SqlDbType.NVarChar, 50);
-        //            command.Parameters["@cid"].Value = r.Category_id;
-        //            command.Parameters["@sid"].Value = r.SubCategory_id;
-        //            using (var reader = command.ExecuteReader())
-        //            {
-        //                if(!reader.HasRows)
-        //                {
-        //                    sql = "insert into Totals (record_date, category_id, subcategory_id, subcount, subamount) values (GetDate(), @category, @subcategory, 0, 0)";
-        //                    using(var insertCommand = new SqlCommand(sql, _connection))
-        //                    {
-        //                        insertCommand.Parameters.Add("@category", SqlDbType.NVarChar, 50);
-        //                        insertCommand.Parameters.Add("@subcategory", SqlDbType.NVarChar, 50);
-        //                        insertCommand.Parameters["@category"].Value = r.Category_id;
-        //                        insertCommand.Parameters["@subcategory"].Value = r.SubCategory_id;
-        //                        insertCommand.ExecuteNonQuery();
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine("Update_totals failed." + e.Message);
-        //    }
-        //}
         private void Update_totals(RecordForm r, bool pos)
         {
-            if (r.Amount > 0)
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "MSI";
+            builder.InitialCatalog = "Cash";
+            builder.UserID = "Apple";
+            builder.Password = "ApplePen";
+            builder.Encrypt = true;
+            builder.TrustServerCertificate = true;
+
+            string connectionString = builder.ConnectionString;
+            var connection = new SqlConnection(connectionString);
+            try
             {
-                try
+                connection.Open();
+                string sql = "update Totals set subcount = subcount + 1 , subamount = the_total + @amount where category_id = @tcid and subcategory_id = @tsid";
+                int affect_row = 0;
+                while (affect_row == 0)
                 {
-                    string sql = "update Totals set subcount = subcount + 1 , subamount = the_total + @amount where category_id = @tcid and subcategory_id = @tsid";
-                    int affect_row = 0;
-                    while(affect_row == 0)
+                    using (SqlCommand command = new SqlCommand(sql, connection))
                     {
-                        using (SqlCommand command = new SqlCommand(sql, _connection))
+                        command.Parameters.Add("@amount", SqlDbType.Int);
+                        command.Parameters.Add("@tcid", SqlDbType.NVarChar, 50);
+                        command.Parameters.Add("@tsid", SqlDbType.NVarChar, 50);
+                        command.Parameters["@amount"].Value = pos ? r.Amount : r.Amount * -1;
+                        command.Parameters["@tcid"].Value = r.Category_id;
+                        command.Parameters["@tsid"].Value = r.SubCategory_id;
+                        affect_row = command.ExecuteNonQuery();
+                    }
+                    if (affect_row == 0)
+                    {
+                        string sql2 = "insert into Totals (category_id, subcategory_id) values ( @category, @subcategory)";
+                        using (SqlCommand command2 = new SqlCommand(sql2, connection))
                         {
-                            command.Parameters.Add("@amount", SqlDbType.Int);
-                            command.Parameters.Add("@tcid", SqlDbType.NVarChar, 50);
-                            command.Parameters.Add("@tsid", SqlDbType.NVarChar, 50);
-                            command.Parameters["@amount"].Value = pos ? r.Amount : r.Amount * -1;
-                            command.Parameters["@tcid"].Value = r.Category_id;
-                            command.Parameters["@tsid"].Value = r.SubCategory_id;
-                            affect_row = command.ExecuteNonQuery();
-                        }
-                        if (affect_row == 0)
-                        {
-                            string sql2 = "insert into Totals (category_id, subcategory_id) values ( @category, @subcategory)";
-                            using (SqlCommand command2 = new SqlCommand(sql2, _connection))
-                            {
-                                command2.Parameters.Add("@category", SqlDbType.NVarChar, 50);
-                                command2.Parameters.Add("@subcategory", SqlDbType.NVarChar, 50);
-                                command2.Parameters["@category"].Value = r.Category_id;
-                                command2.Parameters["@subcategory"].Value = r.SubCategory_id;
-                                command2.ExecuteNonQuery();
-                            }
+                            command2.Parameters.Add("@category", SqlDbType.NVarChar, 50);
+                            command2.Parameters.Add("@subcategory", SqlDbType.NVarChar, 50);
+                            command2.Parameters["@category"].Value = r.Category_id;
+                            command2.Parameters["@subcategory"].Value = r.SubCategory_id;
+                            command2.ExecuteNonQuery();
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Update_totals failed." + e.Message);
-                }
             }
-            else return;
+            catch (Exception e)
+            {
+                Console.WriteLine("Update_totals failed." + e.Message);
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
         private string AddLogic(string org, bool j)
         {
             return j ? " and " + org : org;
         }
-        public void Initialize()
+        public void Add(RecordForm r)
         {
             try
             {
@@ -105,23 +82,14 @@ namespace AccountAPI.DataStorage
                 builder.InitialCatalog = "Cash";
                 builder.UserID = "Apple";
                 builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
 
                 string connectionString = builder.ConnectionString;
-                _connection = new SqlConnection(connectionString);
-                _connection.Open();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Initialize failed." + e.Message);
-            }
-        }
-        public void Add(RecordForm r)
-        {
-            try
-            {
-                if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
+                var connection = new SqlConnection(connectionString);
+                connection.Open();
                 string sql = "insert into Record (record_date, category_id, subcategory_id, record_amount, description) values (GetDate(), @cid, @scid, @amount, @comment);";
-                using(SqlCommand command = new SqlCommand(sql, _connection))
+                using(SqlCommand command = new SqlCommand(sql, connection))
                 {
                     command.Parameters.Add("@cid", SqlDbType.Int);
                     command.Parameters.Add("@scid", SqlDbType.Int);
@@ -145,10 +113,20 @@ namespace AccountAPI.DataStorage
         {
             try
             {
-                if(_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                var connection = new SqlConnection(connectionString);
+                connection.Open();
                 string sql = "delete from Record where";
                 int count = 0;
-                using (SqlCommand command = new SqlCommand(sql, _connection))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
                     if (r.Id > 0)
                     {
@@ -191,35 +169,68 @@ namespace AccountAPI.DataStorage
         public List<RecordForm> GetAllRecords()
         {
             List<RecordForm> records = new List<RecordForm>();
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "MSI";
+            builder.InitialCatalog = "Cash";
+            builder.UserID = "Apple";
+            builder.Password = "ApplePen";
+            builder.Encrypt = true;
+            builder.TrustServerCertificate = true;
+
+            string connectionString = builder.ConnectionString;
+            var connection = new SqlConnection(connectionString);
             try
             {
-                if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection failed.");
-                string sql = "SELECT * FROM Record";
-                using (SqlCommand command = new SqlCommand(sql, _connection))
-                {
-                    using(SqlDataReader reader = command.ExecuteReader())
+                connection.Open();
+
+                string sql = "SELECT record_id, record_date, category_id, subcategory_id, record_amount, description FROM Record";
+                SqlCommand command = new SqlCommand(sql, connection);
+                
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    if (!reader.HasRows)
+                    {
+                        records.Add(new RecordForm()
+                        {
+                            Id = 1,
+                            Date = DateTime.Now,
+                            Category = "TestCategory",
+                            SubCategory = "TestSubCategory",
+                            Amount = 1000,
+                            SubCount = 1,
+                            SubAmount = 1000,
+                            Comment = "TestComment"
+                        });
+                    }
+                    else
                     {
                         while (reader.Read())
                         {
-                            RecordForm record = new RecordForm
-                            {
-                                Id = Convert.ToInt32(reader["record_id"]),
-                                Date = Convert.ToDateTime(reader["record_date"]),
-                                Category_id = Convert.ToInt32(reader["category_id"]),
-                                Category = reader["record_category"].ToString() ?? "",
-                                SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
-                                SubCategory = reader["record_subcategory"].ToString() ?? "",
-                                Amount = Convert.ToInt32(reader["record_amount"]),
-                                Comment = reader["descript"].ToString() ?? ""
-                            };
+                        RecordForm record = new RecordForm
+                        {
+                            Id = Convert.ToInt32(reader["record_id"]),
+                            Date = Convert.ToDateTime(reader["record_date"]),
+                            Category_id = Convert.ToInt32(reader["category_id"]),
+                            SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
+                            Amount = Convert.ToInt32(reader["record_amount"]),
+                            Comment = reader["description"].ToString() ?? string.Empty
+                        };
+                            //if (!Convert.IsDBNull(reader["description"]))
+                            //{
+                            //    record.Comment = reader["description"].ToString() ?? "";
+                            //}
                             records.Add(record);
                         }
                     }
-                }
+                
             }
             catch (Exception e)
             {
                 Console.WriteLine("GetAllRecords failed." + e.Message);
+            }
+            finally
+            {
+                connection.Close();
             }
             return records;
         }
@@ -228,11 +239,21 @@ namespace AccountAPI.DataStorage
             List<RecordForm> records = new List<RecordForm>();
             try
             {
-                if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection failed.");
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                var connection = new SqlConnection(connectionString);
+                connection.Open();
                 string sql = "SELECT * FROM Record as R where";
                 string sql2 = "join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
                 int count = 0;
-                using (SqlCommand command = new SqlCommand(sql, _connection))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
                     if (r.Id <= 0)
                     {
@@ -302,11 +323,21 @@ namespace AccountAPI.DataStorage
             List<RecordForm> records = new List<RecordForm>();
             try
             {
-                if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection failed.");
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                var connection = new SqlConnection(connectionString);
+                connection.Open();
                 string sql = "SELECT * FROM Record where";
                 string sql2 = " join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
                 int count = 0;
-                using (SqlCommand command = new SqlCommand(sql, _connection))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
                     if (r1.Id <= 0 && r2.Id <= 0)
                     {
@@ -388,11 +419,22 @@ namespace AccountAPI.DataStorage
         public RecordForm GetTotals(RecordForm r)
         {
             RecordForm totals = new RecordForm();
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "MSI";
+            builder.InitialCatalog = "Cash";
+            builder.UserID = "Apple";
+            builder.Password = "ApplePen";
+            builder.Encrypt = true;
+            builder.TrustServerCertificate = true;
+
+            string connectionString = builder.ConnectionString;
+            var connection = new SqlConnection(connectionString);
+            connection.Open();
             string sql = "select Sum(subcount) as times, Sum(sub_amount) as amount from Totals";
             int count = 0;
             try
             {
-                using(var command = new SqlCommand(sql, _connection))
+                using(var command = new SqlCommand(sql, connection))
                 {
                     if (r.Date != DateTime.MinValue)
                     {
@@ -442,10 +484,20 @@ namespace AccountAPI.DataStorage
         {
             try
             {
-                if (_connection == null || _connection.State == ConnectionState.Open) throw new InvalidOperationException("Connection is not initialized.");
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                var connection = new SqlConnection(connectionString);
+                connection.Open();
                 string sql = "update Record set (record_date = @ndate, category_id = @ncategory_id, subcategory_id = @nsubcategory_id, record_amount = @namount, description = @ndescription) where ";
                 int count = 0;
-                using (SqlCommand command = new SqlCommand(sql, _connection))
+                using (SqlCommand command = new SqlCommand(sql, connection))
                 {
                     if (r.Id <= 0)
                     {

@@ -10,7 +10,6 @@ namespace TestAcounting.DataStorage
 {
     internal interface IDataStorage
     {
-        void Initialize();
         void Add(RecordForm r);
         void Remove(RecordForm r);
         List<RecordForm> GetAllRecords();
