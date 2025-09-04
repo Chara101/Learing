@@ -19,20 +19,20 @@ namespace AccountAPI.DataStorage
         };
         private void Update_totals(RecordForm r, bool pos)
         {
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-            builder.DataSource = "MSI";
-            builder.InitialCatalog = "Cash";
-            builder.UserID = "Apple";
-            builder.Password = "ApplePen";
-            builder.Encrypt = true;
-            builder.TrustServerCertificate = true;
-
-            string connectionString = builder.ConnectionString;
-            var connection = new SqlConnection(connectionString);
             try
             {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                using var connection = new SqlConnection(connectionString);
                 connection.Open();
-                string sql = "update Totals set subcount = subcount + 1 , subamount = the_total + @amount where category_id = @tcid and subcategory_id = @tsid";
+                string sql = "update Totals set subcount = subcount + 1 , subamount = subamount + @amount where category_id = @tcid and subcategory_id = @tsid";
                 int affect_row = 0;
                 while (affect_row == 0)
                 {
@@ -64,10 +64,6 @@ namespace AccountAPI.DataStorage
             {
                 Console.WriteLine("Update_totals failed." + e.Message);
             }
-            finally
-            {
-                connection.Close();
-            }
         }
         private string AddLogic(string org, bool j)
         {
@@ -86,7 +82,7 @@ namespace AccountAPI.DataStorage
                 builder.TrustServerCertificate = true;
 
                 string connectionString = builder.ConnectionString;
-                var connection = new SqlConnection(connectionString);
+                using var connection = new SqlConnection(connectionString);
                 connection.Open();
                 string sql = "insert into Record (record_date, category_id, subcategory_id, record_amount, description) values (GetDate(), @cid, @scid, @amount, @comment);";
                 using(SqlCommand command = new SqlCommand(sql, connection))
@@ -102,7 +98,6 @@ namespace AccountAPI.DataStorage
                     command.ExecuteNonQuery();
                     Update_totals(r, true); //之後加上交易紀錄成功才更新統計資料
                 }
-
             }
             catch (Exception e)
             {
@@ -122,7 +117,7 @@ namespace AccountAPI.DataStorage
                 builder.TrustServerCertificate = true;
 
                 string connectionString = builder.ConnectionString;
-                var connection = new SqlConnection(connectionString);
+                using var connection = new SqlConnection(connectionString);
                 connection.Open();
                 string sql = "delete from Record where";
                 int count = 0;
@@ -169,43 +164,43 @@ namespace AccountAPI.DataStorage
         public List<RecordForm> GetAllRecords()
         {
             List<RecordForm> records = new List<RecordForm>();
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-            builder.DataSource = "MSI";
-            builder.InitialCatalog = "Cash";
-            builder.UserID = "Apple";
-            builder.Password = "ApplePen";
-            builder.Encrypt = true;
-            builder.TrustServerCertificate = true;
-
-            string connectionString = builder.ConnectionString;
-            var connection = new SqlConnection(connectionString);
             try
             {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                using var connection = new SqlConnection(connectionString);
                 connection.Open();
 
                 string sql = "SELECT record_id, record_date, category_id, subcategory_id, record_amount, description FROM Record";
                 SqlCommand command = new SqlCommand(sql, connection);
-                
-                    SqlDataReader reader = command.ExecuteReader();
 
-                    if (!reader.HasRows)
+                SqlDataReader reader = command.ExecuteReader();
+
+                if (!reader.HasRows)
+                {
+                    records.Add(new RecordForm()
                     {
-                        records.Add(new RecordForm()
-                        {
-                            Id = 1,
-                            Date = DateTime.Now,
-                            Category = "TestCategory",
-                            SubCategory = "TestSubCategory",
-                            Amount = 1000,
-                            SubCount = 1,
-                            SubAmount = 1000,
-                            Comment = "TestComment"
-                        });
-                    }
-                    else
+                        Id = 1,
+                        Date = DateTime.Now,
+                        Category = "TestCategory",
+                        SubCategory = "TestSubCategory",
+                        Amount = 1000,
+                        SubCount = 1,
+                        SubAmount = 1000,
+                        Comment = "TestComment"
+                    });
+                }
+                else
+                {
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
                         RecordForm record = new RecordForm
                         {
                             Id = Convert.ToInt32(reader["record_id"]),
@@ -215,22 +210,13 @@ namespace AccountAPI.DataStorage
                             Amount = Convert.ToInt32(reader["record_amount"]),
                             Comment = reader["description"].ToString() ?? string.Empty
                         };
-                            //if (!Convert.IsDBNull(reader["description"]))
-                            //{
-                            //    record.Comment = reader["description"].ToString() ?? "";
-                            //}
-                            records.Add(record);
-                        }
+                        records.Add(record);
                     }
-                
+                }
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 Console.WriteLine("GetAllRecords failed." + e.Message);
-            }
-            finally
-            {
-                connection.Close();
             }
             return records;
         }
@@ -248,7 +234,7 @@ namespace AccountAPI.DataStorage
                 builder.TrustServerCertificate = true;
 
                 string connectionString = builder.ConnectionString;
-                var connection = new SqlConnection(connectionString);
+                using var connection = new SqlConnection(connectionString);
                 connection.Open();
                 string sql = "SELECT * FROM Record as R where";
                 string sql2 = "join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
@@ -332,7 +318,7 @@ namespace AccountAPI.DataStorage
                 builder.TrustServerCertificate = true;
 
                 string connectionString = builder.ConnectionString;
-                var connection = new SqlConnection(connectionString);
+                using var connection = new SqlConnection(connectionString);
                 connection.Open();
                 string sql = "SELECT * FROM Record where";
                 string sql2 = " join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
@@ -493,7 +479,7 @@ namespace AccountAPI.DataStorage
                 builder.TrustServerCertificate = true;
 
                 string connectionString = builder.ConnectionString;
-                var connection = new SqlConnection(connectionString);
+                using var connection = new SqlConnection(connectionString);
                 connection.Open();
                 string sql = "update Record set (record_date = @ndate, category_id = @ncategory_id, subcategory_id = @nsubcategory_id, record_amount = @namount, description = @ndescription) where ";
                 int count = 0;

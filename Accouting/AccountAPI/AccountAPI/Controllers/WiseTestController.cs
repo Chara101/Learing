@@ -15,63 +15,55 @@ namespace AccountAPI.Controllers
     {
         IDataStorage _db = new MssqlCtrl();
         // GET: api/<WiseTestController>
-        [HttpGet]
-        public IEnumerable<RecordForm> Get()
+        [HttpGet("search/GetAllRecord")]
+        public IEnumerable<RecordForm> GetAllRecord()
         {
-            //List<string> result = new List<string>();
-            //List<RecordForm> result = _db.GetAllRecords();
-            //foreach (var r in records)
-            //{
-            //    result.Add(r.Id.ToString() + "," + r.Date.ToString("yyyy/MM/dd") + "," + r.Category + "," + r.SubCategory + "," + r.Amount.ToString() + "," + r.SubCount.ToString() + "," + r.SubAmount.ToString() + "," + r.Comment);
-            //}
-
             List<RecordForm> result = new List<RecordForm>();
-
-            //result.Add(new RecordForm()
-            //{
-            //    Id = 1,
-            //    Date = DateTime.Now,
-            //    Category = "TestCategory",
-            //    SubCategory = "TestSubCategory",
-            //    Amount = 1000,
-            //    SubCount = 1,
-            //    SubAmount = 1000,
-            //    Comment = "TestComment" 
-            //});
-
             result = _db.GetAllRecords();
-            
-            //SqlConnection connectionstring = new SqlConnection("Server=MSI;Database=Cash;User Id=Apple;Password=ApplePen;Encrypt=true;TrustServerCertificate=True;");
-            //connectionstring.Open();
-
-
             return result;
         }
 
-        // GET api/<WiseTestController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpPost("search/GetRecord")]
+        public IEnumerable<RecordForm> GetRecord([FromBody] RecordForm r)
         {
-            return "id: " + id.ToString();
+            List<RecordForm> result = new List<RecordForm>();
+            result = _db.GetRecordsBy(r);
+            return result;
+        }
+        
+        [HttpPost("search/GetRecordInRange")]
+        public IEnumerable<RecordForm> GetRecordInRange([FromBody] BandRecord r)
+        {
+            List<RecordForm> result = new List<RecordForm>();
+            result = _db.GetRecordsBy(r.r1, r.r2);
+            return result;
         }
 
-        // POST api/<WiseTestController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpPost("search/GetTotals")]
+        public RecordForm GetTotals([FromBody] RecordForm r)
         {
-
+            RecordForm result = new RecordForm();
+            result = _db.GetTotals(r);
+            return result;
         }
 
-        // PUT api/<WiseTestController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPost("add/AddObject")]
+        public void AddObject([FromBody] RecordForm value)
         {
+            _db.Add(value);
+        }
+
+        [HttpPut("renew")]
+        public void Renew([FromBody] RecordForm target, RecordForm value)
+        {
+            _db.Update(target, value);
         }
 
         // DELETE api/<WiseTestController>/5
-        [HttpDelete("{id}")]
+        [HttpDelete("delete")]
         public void Delete(int id)
         {
+            _db.Remove(new RecordForm() { Id = id });
         }
     }
 }

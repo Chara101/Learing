@@ -250,7 +250,7 @@
         }
       }
     },
-    "/api/WiseTest": {
+    "/api/WiseTest/search/AllRecord": {
       "get": {
         "tags": [
           "WiseTest"
@@ -286,7 +286,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/WiseTest/search/GetRecord": {
       "post": {
         "tags": [
           "WiseTest"
@@ -295,17 +297,140 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "string"
+                "$ref": "#/components/schemas/RecordForm"
               }
             },
             "text/json": {
               "schema": {
-                "type": "string"
+                "$ref": "#/components/schemas/RecordForm"
               }
             },
             "application/*+json": {
               "schema": {
-                "type": "string"
+                "$ref": "#/components/schemas/RecordForm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/WiseTest/search/GetRecordInRange": {
+      "post": {
+        "tags": [
+          "WiseTest"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RecordForm"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RecordForm"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RecordForm"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/WiseTest/add/object": {
+      "post": {
+        "tags": [
+          "WiseTest"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordForm"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordForm"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordForm"
               }
             }
           }
@@ -318,44 +443,6 @@
       }
     },
     "/api/WiseTest/{id}": {
-      "get": {
-        "tags": [
-          "WiseTest"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      },
       "put": {
         "tags": [
           "WiseTest"
@@ -395,7 +482,9 @@
             "description": "OK"
           }
         }
-      },
+      }
+    },
+    "/api/WiseTest/delete": {
       "delete": {
         "tags": [
           "WiseTest"
@@ -403,8 +492,7 @@
         "parameters": [
           {
             "name": "id",
-            "in": "path",
-            "required": true,
+            "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
