@@ -138,35 +138,8 @@
   },
   {
     "ContainingType": "AccountAPI.Controllers.WiseTestController",
-    "Method": "Put",
-    "RelativePath": "api/WiseTest/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "value",
-        "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Void",
-        "MediaTypes": [],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "AccountAPI.Controllers.WiseTestController",
-    "Method": "Post",
-    "RelativePath": "api/WiseTest/add/object",
+    "Method": "AddObject",
+    "RelativePath": "api/WiseTest/add/AddObject",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -209,8 +182,61 @@
   },
   {
     "ContainingType": "AccountAPI.Controllers.WiseTestController",
-    "Method": "GetAll",
-    "RelativePath": "api/WiseTest/search/AllRecord",
+    "Method": "Login",
+    "RelativePath": "api/WiseTest/login",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "password",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.String",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "Renew",
+    "RelativePath": "api/WiseTest/renew",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "r",
+        "Type": "AccountAPI.Models.BandRecord",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "GetAllRecord",
+    "RelativePath": "api/WiseTest/search/GetAllRecord",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -229,7 +255,7 @@
   },
   {
     "ContainingType": "AccountAPI.Controllers.WiseTestController",
-    "Method": "GetWithCondition",
+    "Method": "GetRecord",
     "RelativePath": "api/WiseTest/search/GetRecord",
     "HttpMethod": "POST",
     "IsController": true,
@@ -255,21 +281,47 @@
   },
   {
     "ContainingType": "AccountAPI.Controllers.WiseTestController",
-    "Method": "GetWithRange",
+    "Method": "GetRecordInRange",
     "RelativePath": "api/WiseTest/search/GetRecordInRange",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "lr",
-        "Type": "System.Collections.Generic.List\u00601[[AccountAPI.Models.RecordForm, AccountAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Name": "r",
+        "Type": "AccountAPI.Models.BandRecord",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
         "Type": "System.Collections.Generic.IEnumerable\u00601[[AccountAPI.Models.RecordForm, AccountAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "GetTotals",
+    "RelativePath": "api/WiseTest/search/GetTotals",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "r",
+        "Type": "AccountAPI.Models.RecordForm",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "AccountAPI.Models.RecordForm",
         "MediaTypes": [
           "text/plain",
           "application/json",

@@ -8,8 +8,8 @@ namespace AccountAPI.Models
 {
     public class RecordForm
     {
-        public int Id { get; set; }
-        public DateTime Date { get; set; }
+        public int Id { get; set; } = 0;
+        public DateTime Date { get; set; } = DateTime.MinValue;
         public int Category_id { get; set; } = 0;
         public string Category { get; set; } = string.Empty;
         public int SubCategory_id { get; set; } = 0;

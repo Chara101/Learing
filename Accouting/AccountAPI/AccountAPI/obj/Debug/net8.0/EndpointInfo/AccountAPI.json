@@ -250,7 +250,7 @@
         }
       }
     },
-    "/api/WiseTest/search/AllRecord": {
+    "/api/WiseTest/search/GetAllRecord": {
       "get": {
         "tags": [
           "WiseTest"
@@ -281,6 +281,52 @@
                   "items": {
                     "$ref": "#/components/schemas/RecordForm"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/WiseTest/login": {
+      "get": {
+        "tags": [
+          "WiseTest"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -354,26 +400,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/RecordForm"
-                }
+                "$ref": "#/components/schemas/BandRecord"
               }
             },
             "text/json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/RecordForm"
-                }
+                "$ref": "#/components/schemas/BandRecord"
               }
             },
             "application/*+json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/RecordForm"
-                }
+                "$ref": "#/components/schemas/BandRecord"
               }
             }
           }
@@ -411,7 +448,55 @@
         }
       }
     },
-    "/api/WiseTest/add/object": {
+    "/api/WiseTest/search/GetTotals": {
+      "post": {
+        "tags": [
+          "WiseTest"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordForm"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordForm"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordForm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordForm"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordForm"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordForm"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/WiseTest/add/AddObject": {
       "post": {
         "tags": [
           "WiseTest"
@@ -442,37 +527,26 @@
         }
       }
     },
-    "/api/WiseTest/{id}": {
+    "/api/WiseTest/renew": {
       "put": {
         "tags": [
           "WiseTest"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "string"
+                "$ref": "#/components/schemas/BandRecord"
               }
             },
             "text/json": {
               "schema": {
-                "type": "string"
+                "$ref": "#/components/schemas/BandRecord"
               }
             },
             "application/*+json": {
               "schema": {
-                "type": "string"
+                "$ref": "#/components/schemas/BandRecord"
               }
             }
           }
@@ -509,6 +583,18 @@
   },
   "components": {
     "schemas": {
+      "BandRecord": {
+        "type": "object",
+        "properties": {
+          "r1": {
+            "$ref": "#/components/schemas/RecordForm"
+          },
+          "r2": {
+            "$ref": "#/components/schemas/RecordForm"
+          }
+        },
+        "additionalProperties": false
+      },
       "RecordForm": {
         "type": "object",
         "properties": {

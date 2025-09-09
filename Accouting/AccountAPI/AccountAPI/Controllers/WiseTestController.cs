@@ -22,6 +22,11 @@ namespace AccountAPI.Controllers
             result = _db.GetAllRecords();
             return result;
         }
+        [HttpGet("login")]
+        public string Login([FromQuery] int id, string password)
+        {
+            return "Login Success";
+        }
 
         [HttpPost("search/GetRecord")]
         public IEnumerable<RecordForm> GetRecord([FromBody] RecordForm r)
@@ -54,9 +59,9 @@ namespace AccountAPI.Controllers
         }
 
         [HttpPut("renew")]
-        public void Renew([FromBody] RecordForm target, RecordForm value)
+        public void Renew([FromBody] BandRecord r)
         {
-            _db.Update(target, value);
+            _db.Update(r.r1, r.r2);
         }
 
         // DELETE api/<WiseTestController>/5
