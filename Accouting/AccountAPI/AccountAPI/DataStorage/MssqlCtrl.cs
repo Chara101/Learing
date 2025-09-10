@@ -65,10 +65,10 @@ namespace AccountAPI.DataStorage
                 Console.WriteLine("Update_totals failed." + e.Message);
             }
         }
-        private string AddLogic(string org, bool j)
-        {
-            return j ? " and " + org : org;
-        }
+        //private string AddLogic(string org, bool j)
+        //{
+        //    return j ? " and " + org : org;
+        //}
         public void Add(RecordForm r)
         {
             try
@@ -125,27 +125,31 @@ namespace AccountAPI.DataStorage
                 {
                     if (r.Id > 0)
                     {
-                        command.CommandText += AddLogic(_condition["id"], count > 0);
+                        if(count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["id"];
                         command.Parameters.Add("@id", SqlDbType.Int);
                         command.Parameters["@id"].Value = r.Id;
                         count++;
                     }
                     if (r.Date != DateTime.MinValue)
                     {
-                        command.CommandText += AddLogic(_condition["time"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["time"];
                         command.Parameters.Add("@date", SqlDbType.DateTime);
                         command.Parameters["@date"].Value = r.Date;
                         count++;
                     }
                     if (r.Category_id != 0)
                     {
-                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["category_id"];
                         command.Parameters.Add("@category_id", SqlDbType.NVarChar, 50);
                         command.Parameters["@category_id"].Value = r.Category;
                         count++;
                         if(r.SubCategory_id != 0)
                         {
-                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
+                            if (count > 0) command.CommandText += " and ";
+                            command.CommandText += _condition["subcategory_id"];
                             command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
                             command.Parameters["@subcategory_id"].Value = r.SubCategory;
                             count++;
@@ -236,7 +240,7 @@ namespace AccountAPI.DataStorage
                 string connectionString = builder.ConnectionString;
                 using var connection = new SqlConnection(connectionString);
                 connection.Open();
-                string sql = "SELECT \r\n    R.record_id, \r\n   R.category_id, \r\n    C.category_name, \r\n    R.subcategory_id, \r\n    S.subcategory_name, \r\n    R.user_id, \r\n    U.user_name,\r\n\tR.record_amount,\r\n\tR.description\r\nFROM Record R\r\nINNER JOIN CategoryList C \r\n    ON R.category_id = C.category_id\r\nINNER JOIN SubCategoryList S \r\n    ON R.subcategory_id = S.subcategory_id\r\nINNER JOIN UserList U \r\n    ON R.user_id = U.user_id\r\n " +
+                string sql = "SELECT \r\n    R.record_id,\r\n\tR.record_date,\r\n   R.category_id, \r\n    C.category_name, \r\n    R.subcategory_id, \r\n    S.subcategory_name, \r\n    R.user_id, \r\n    U.user_name,\r\n\tR.record_amount,\r\n\tR.description\r\nFROM Record R\r\nINNER JOIN CategoryList C \r\n    ON R.category_id = C.category_id\r\nINNER JOIN SubCategoryList S \r\n    ON R.subcategory_id = S.subcategory_id\r\nINNER JOIN UserList U \r\n    ON R.user_id = U.user_id\r\n " +
                     "where ";
                 //string sql = "SELECT * FROM Record as R LEFT JOIN CategoryList C ON R.category_id = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id where ";
                 //string sql2 = " join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
@@ -245,35 +249,40 @@ namespace AccountAPI.DataStorage
                 {
                     if (r.Id >= 0)
                     {
-                        command.CommandText += AddLogic(_condition["id"], count > 0);
+                        if(count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["id"];
                         command.Parameters.Add("@id", SqlDbType.Int);
                         command.Parameters["@id"].Value = r.Id;
                         count++ ;
                     }
                     if (r.Date > DateTime.MinValue)
                     {
-                        command.CommandText += AddLogic(_condition["time"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["time"];
                         command.Parameters.Add("@date", SqlDbType.DateTime);
                         command.Parameters["@date"].Value = r.Date;
                         count++;
                     }
-                    if (r.Category_id != 0)
+                    if (r.Category_id > 0)
                     {
-                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["category_id"];
                         command.Parameters.Add("@category_id", SqlDbType.NVarChar, 50);
                         command.Parameters["@category_id"].Value = r.Category;
                         count++;
-                        if(r.SubCategory_id != 0)
+                        if(r.SubCategory_id > 0)
                         {
-                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
+                            if (count > 0) command.CommandText += " and ";
+                            command.CommandText += _condition["subcategory_id"];
                             command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
                             command.Parameters["@subcategory_id"].Value = r.SubCategory;
                             count++;
                         }
                     }
-                    if (r.Amount != 0)
+                    if (r.Amount > 0)
                     {
-                        command.CommandText += AddLogic(_condition["money"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["money"];
                         command.Parameters.Add("@amount", SqlDbType.Int);
                         command.Parameters["@amount"].Value = r.Amount;
                         count++;
@@ -321,62 +330,68 @@ namespace AccountAPI.DataStorage
                 string connectionString = builder.ConnectionString;
                 using var connection = new SqlConnection(connectionString);
                 connection.Open();
-                string sql = "SELECT * FROM Record where";
-                string sql2 = " join CategoryList as C on R.categoryid = C.category_id join SubCategoryList as S on S.category_id = R.category_id join UserLIst as U on U.user_id = R.user_id;";
+                string sql = "SELECT \r\n    R.record_id,\r\n\tR.record_date,\r\n   R.category_id, \r\n    C.category_name, \r\n    R.subcategory_id, \r\n    S.subcategory_name, \r\n    R.user_id, \r\n    U.user_name,\r\n\tR.record_amount,\r\n\tR.description\r\nFROM Record R\r\nINNER JOIN CategoryList C \r\n    ON R.category_id = C.category_id\r\nINNER JOIN SubCategoryList S \r\n    ON R.subcategory_id = S.subcategory_id\r\nINNER JOIN UserList U \r\n    ON R.user_id = U.user_id\r\n " +
+                    "where "; 
                 int count = 0;
                 using (SqlCommand command = new SqlCommand(sql, connection))
                 {
-                    if (r1.Id <= 0 && r2.Id <= 0)
+                    if (r1.Id > 0 && r2.Id > 0)
                     {
-                        command.CommandText += AddLogic(_condition["id"], count > 0);
+                        if(count > 0) command.CommandText += " and ";
+                        command.CommandText += " (";
+                        command.CommandText += _condition["id"];
                         command.Parameters.Add("@id", SqlDbType.Int);
                         command.Parameters["@id"].Value = r1.Id;
-                        command.CommandText += AddLogic(_condition["id"] + "2", count > 0);
+                        command.CommandText += " or " + _condition["id"] + "2";
                         command.Parameters.Add("@id2", SqlDbType.Int);
                         command.Parameters["@id2"].Value = r2.Id;
+                        command.CommandText += " )";
                         count++;
                     }
-                    if (DateTime.MinValue.Date <= r1.Date && r1.Date <= r2.Date)
+                    if (r1.Date > DateTime.MinValue.Date && r2.Date >= r1.Date)
                     {
-                        command.CommandText += AddLogic(_condition["time"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["time"];
                         command.Parameters.Add("@date", SqlDbType.DateTime);
                         command.Parameters["@date"].Value = r1.Date;
-                        command.CommandText += AddLogic(_condition["time"] + "2", count > 0);
+                        command.CommandText += " and " + _condition["time"] + "2";
                         command.Parameters.Add("@date2", SqlDbType.DateTime);
                         command.Parameters["@date2"].Value = r2.Date;
                         count++;
                     }
-                    if (r1.Category_id != 0 && r2.Category_id != 0)
+                    if (r1.Category_id > 0 && r2.Category_id > 0)
                     {
-                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["category_id"];
                         command.Parameters.Add("@category", SqlDbType.NVarChar, 50);
                         command.Parameters["@category"].Value = r1.Category;
-                        command.CommandText += AddLogic(_condition["category_id"] + "2", count > 0);
+                        command.CommandText += " and " + _condition["category_id"] + "2";
                         command.Parameters.Add("@category_id2", SqlDbType.NVarChar, 50);
                         command.Parameters["@category_id2"].Value = r2.Category;
                         count++;
-                        if (r1.SubCategory_id != 0 && r2.SubCategory_id != 0)
+                        if (r1.SubCategory_id > 0 && r2.SubCategory_id > 0)
                         {
-                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
+                            if (count > 0) command.CommandText += " and ";
+                            command.CommandText += _condition["subcategory_id"];
                             command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
                             command.Parameters["@subcategory_id"].Value = r1.SubCategory;
-                            command.CommandText += AddLogic(_condition["subcategory_id"] + "2", count > 0);
+                            command.CommandText += " and " + _condition["subcategory_id"] + "2";
                             command.Parameters.Add("@subcategory_id2", SqlDbType.NVarChar, 50);
                             command.Parameters["@subcategory_id2"].Value = r2.SubCategory;
                             count++;
                         }
                     }
-                    if (r1.Amount != 0 && r2.Amount >= r1.Amount)
+                    if (r1.Amount > 0 && r2.Amount >= r1.Amount)
                     {
-                        command.CommandText += AddLogic(_condition["money"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["money"];
                         command.Parameters.Add("@amount", SqlDbType.Int);
                         command.Parameters["@amount"].Value = r1.Amount;
-                        command.CommandText += AddLogic(_condition["money"] + "2", count > 0);
+                        command.CommandText += " and " + _condition["money"] + "2";
                         command.Parameters.Add("@amount2", SqlDbType.Int);
                         command.Parameters["@amount2"].Value = r2.Amount;
                         count++;
                     }
-                    sql += sql2;
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -390,7 +405,7 @@ namespace AccountAPI.DataStorage
                                 SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
                                 SubCategory = reader["subcategory_name"].ToString() ?? "",
                                 Amount = Convert.ToInt32(reader["record_amount"]),
-                                Comment = reader["descript"].ToString() ?? ""
+                                Comment = reader["description"].ToString() ?? ""
                             };
                             records.Add(record);
                         }
@@ -417,7 +432,7 @@ namespace AccountAPI.DataStorage
             string connectionString = builder.ConnectionString;
             var connection = new SqlConnection(connectionString);
             connection.Open();
-            string sql = "select Sum(subcount) as times, Sum(sub_amount) as amount from Totals";
+            string sql = "select Sum(subcount) as times, Sum(sub_amount) as amount from Totals where ";
             int count = 0;
             try
             {
@@ -425,20 +440,23 @@ namespace AccountAPI.DataStorage
                 {
                     if (r.Date != DateTime.MinValue)
                     {
-                        command.CommandText += AddLogic(_condition["time"], count > 0);
+                        if(count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["time"];
                         command.Parameters.Add("@date", SqlDbType.DateTime);
                         command.Parameters["@date"].Value = r.Date;
                         count++;
                     }
                     if (!string.IsNullOrEmpty(r.Category))
                     {
-                        command.CommandText += AddLogic(_condition["category_id"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["category_id"];
                         command.Parameters.Add("@category_id", SqlDbType.NVarChar, 50);
                         command.Parameters["@category_id"].Value = r.Category;
                         count++;
                         if (r.SubCategory_id != 0)
                         {
-                            command.CommandText += AddLogic(_condition["subcategory_id"], count > 0);
+                            if (count > 0) command.CommandText += " and ";
+                            command.CommandText += _condition["subcategory_id"];
                             command.Parameters.Add("@subcategory_id", SqlDbType.NVarChar, 50);
                             command.Parameters["@subcategory_id"].Value = r.SubCategory;
                             count++;
@@ -446,7 +464,8 @@ namespace AccountAPI.DataStorage
                     }
                     if (r.Amount != 0)
                     {
-                        command.CommandText += AddLogic(_condition["money"], count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["money"];
                         command.Parameters.Add("@amount", SqlDbType.Int);
                         command.Parameters["@amount"].Value = r.Amount;
                         count++;
@@ -488,27 +507,31 @@ namespace AccountAPI.DataStorage
                 {
                     if (r.Id <= 0)
                     {
-                        command.CommandText += AddLogic(_condition["id"] + "2", count > 0);
+                        if(count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["id"] + "2";
                         command.Parameters.Add("@id" + "2", SqlDbType.Int);
                         command.Parameters["@id" + "2"].Value = r.Id;
                         count++;
                     }
                     if (r.Date != DateTime.MinValue)
                     {
-                        command.CommandText += AddLogic(_condition["time"] + "2", count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["time"] + "2";
                         command.Parameters.Add("@date" + "2", SqlDbType.DateTime);
                         command.Parameters["@date" + "2"].Value = r.Date;
                         count++;
                     }
                     if (!string.IsNullOrEmpty(r.Category))
                     {
-                        command.CommandText += AddLogic(_condition["category_id"] + "2", count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["category_id"] + "2";
                         command.Parameters.Add("@category_id" + "2", SqlDbType.NVarChar, 50);
                         command.Parameters["@category_id" + "2"].Value = r.Category;
                         count++;
                         if (r.SubCategory_id != 0)
                         {
-                            command.CommandText += AddLogic(_condition["subcategory_id"] + "2", count > 0);
+                            if (count > 0) command.CommandText += " and ";
+                            command.CommandText += _condition["subcategory_id"] + "2";
                             command.Parameters.Add("@subcategory_id" + "2", SqlDbType.NVarChar, 50);
                             command.Parameters["@subcategory_id" + "2"].Value = r.SubCategory;
                             count++;
@@ -516,7 +539,8 @@ namespace AccountAPI.DataStorage
                     }
                     if (r.Amount != 0)
                     {
-                        command.CommandText += AddLogic(_condition["money"] + "2", count > 0);
+                        if (count > 0) command.CommandText += " and ";
+                        command.CommandText += _condition["money"] + "2";
                         command.Parameters.Add("@amount" + "2", SqlDbType.Int);
                         command.Parameters["@amount" + "2"].Value = r.Amount;
                         count++;
