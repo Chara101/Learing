@@ -622,6 +622,14 @@
             "type": "string",
             "nullable": true
           },
+          "user_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "user_name": {
+            "type": "string",
+            "nullable": true
+          },
           "amount": {
             "type": "integer",
             "format": "int32"

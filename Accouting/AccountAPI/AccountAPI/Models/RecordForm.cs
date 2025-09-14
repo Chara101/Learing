@@ -14,6 +14,8 @@ namespace AccountAPI.Models
         public string Category { get; set; } = string.Empty;
         public int SubCategory_id { get; set; } = 0;
         public string SubCategory { get; set; } = string.Empty;
+        public int User_id { get; set; } = 0;
+        public string User_name { get; set; } = string.Empty;
         public int Amount { get; set; } = 0;
         public int SubCount { get; set; } = 0;
         public int SubAmount { get; set; } = 0;
