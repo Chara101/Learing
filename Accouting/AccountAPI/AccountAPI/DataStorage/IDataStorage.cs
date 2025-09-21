@@ -11,11 +11,17 @@ namespace TestAcounting.DataStorage
     internal interface IDataStorage
     {
         void Add(RecordForm r);
+        void AddCategory(string name);
+        void AddSubCategory(int category_id, string name);
         void Remove(RecordForm r);
+        void RmCategory(int id);
+        void RmSubCategory(int id);
         List<RecordForm> GetAllRecords();
         List<RecordForm> GetRecordsBy(RecordForm r);
         List<RecordForm> GetRecordsBy(RecordForm r1, RecordForm r2);
-        RecordForm GetTotals(RecordForm r);
+        List<RecordForm> GetAllTotals();
+        List<RecordForm> GetTotals(RecordForm r);
+        List<RecordForm> GetTotals(RecordForm r1, RecordForm r2);
         void Update(RecordForm tartget, RecordForm content);
     }
 }

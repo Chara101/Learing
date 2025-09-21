@@ -312,6 +312,26 @@
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[AccountAPI.Models.RecordForm, AccountAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "GetTotalsBy",
+    "RelativePath": "api/WiseTest/search/GetTotalsBy",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
     "Parameters": [
       {
         "Name": "r",
@@ -321,7 +341,33 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "AccountAPI.Models.RecordForm",
+        "Type": "System.Collections.Generic.List\u00601[[AccountAPI.Models.RecordForm, AccountAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "GetTotalsInRange",
+    "RelativePath": "api/WiseTest/search/GetTotalsInRange",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "r",
+        "Type": "AccountAPI.Models.BandRecord",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[AccountAPI.Models.RecordForm, AccountAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",

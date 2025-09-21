@@ -100,6 +100,72 @@ namespace AccountAPI.DataStorage
                 Console.WriteLine("Add failed." + e.Message);
             }
         }
+        public void AddCategory(string name)
+        {
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+                string sql = "insert into CategoryList (category_name) values ( @name);";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@name", SqlDbType.NVarChar, 50);
+                    command.Parameters["@name"].Value = name;
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("AddCategory failed." + e.Message);
+            }
+        }
+        public void AddSubCategory(int category_id, string name)
+        {
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+                string connectionString = builder.ConnectionString;
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+                string sql = "insert into SubCategoryList (category_id, subcategory_name) values ( @cid, @name);";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@cid", SqlDbType.Int);
+                    command.Parameters.Add("@name", SqlDbType.NVarChar, 50);
+                    command.Parameters["@cid"].Value = category_id;
+                    command.Parameters["@name"].Value = name;
+                    command.ExecuteNonQuery();
+                }
+                sql = "INSERT INTO CategoryWithSubcategory (category_id, subcategory_id) values (@cid, @sid)";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@cid", SqlDbType.Int);
+                    command.Parameters.Add("@sid", SqlDbType.Int);
+                    command.Parameters["@cid"].Value = category_id;
+                    command.Parameters["@sid"].Value = name;
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("AddSubCategory failed." + e.Message);
+            }
+        }
         public void Remove(RecordForm r)
         {
             try
@@ -159,6 +225,81 @@ namespace AccountAPI.DataStorage
             catch (Exception e)
             {
                 Console.WriteLine("Remove failed." + e.Message);
+            }
+        }
+        public void RmCategory(int id)
+        {
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+                string connectionString = builder.ConnectionString;
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+                List<int> sub_ids = new List<int>();
+                string sql = "SELECT subcategory_id\r\nFROM CategoryWithSubcategory\r\nWHERE category_id = @category_id ; ";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@category_id", SqlDbType.Int);
+                    command.Parameters["@category_id"].Value = id;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            sub_ids.Add(Convert.ToInt32(reader["subcategory_id"]));
+                        }
+                    }
+                }
+                foreach(int sid in sub_ids)
+                {
+                    RmSubCategory(sid);
+                }
+                string sql2 = "DELETE FROM CategoryList \r\nWHERE category_id = @cid";
+                using(SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@cid", SqlDbType.Int);
+                    command.Parameters["@cid"].Value = id;
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("RmCategory failed." + e.Message);
+            }
+        }
+        public void RmSubCategory(int id)
+        {
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+                string connectionString = builder.ConnectionString;
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+                string sql = "DELETE FROM CategoryWithSubcategory WHERE subcategory_id = @sid ; " +
+                    "DELETE FROM SubCategoryList WHERE subcategory_id = @sid2 ; ";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    command.Parameters.Add("@sid", SqlDbType.Int);
+                    command.Parameters.Add("@sid2", SqlDbType.Int);
+                    command.Parameters["@sid"].Value = id;
+                    command.Parameters["@sid2"].Value = id;
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("RmSubCategory failed." + e.Message);
             }
         }
         public List<RecordForm> GetAllRecords()
@@ -425,9 +566,61 @@ namespace AccountAPI.DataStorage
             }
             return records;
         }
-        public RecordForm GetTotals(RecordForm r)
+        public List<RecordForm> GetAllTotals()
         {
-            RecordForm totals = new RecordForm();
+            List<RecordForm> totals = new List<RecordForm>();
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "MSI";
+            builder.InitialCatalog = "Cash";
+            builder.UserID = "Apple";
+            builder.Password = "ApplePen";
+            builder.Encrypt = true;
+            builder.TrustServerCertificate = true;
+            string connectionString = builder.ConnectionString;
+            var connection = new SqlConnection(connectionString);
+            connection.Open();
+            string sql = "SELECT Top 100\r\n\trecord_id,\r\n\trecord_date, \r\n\tcategory_id, \r\n\tsubcategory_id, \r\n\tsubcount,\r\n\tsubamount\r\nFROM Totals";
+            /*
+             * SELECT Top 100
+	                record_id,
+	                record_date, 
+	                category_id, 
+	                subcategory_id, 
+	                subcount,
+	                subamount
+                FROM Totals
+             */
+            try
+            {
+                using (var command = new SqlCommand(sql, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            RecordForm record = new RecordForm
+                            {
+                                Id = Convert.ToInt32(reader["record_id"]),
+                                Date = Convert.ToDateTime(reader["record_date"]),
+                                Category_id = Convert.ToInt32(reader["category_id"]),
+                                SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
+                                SubCount = Convert.ToInt32(reader["subcount"]),
+                                SubAmount = Convert.ToInt32(reader["subamount"])
+                            };
+                            totals.Add(record);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("GetTotals failed." + e.Message);
+            }
+            return totals;
+        }
+        public List<RecordForm> GetTotals(RecordForm r)
+        {
+            List<RecordForm> totals = new List<RecordForm>();
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = "MSI";
             builder.InitialCatalog = "Cash";
@@ -439,12 +632,20 @@ namespace AccountAPI.DataStorage
             string connectionString = builder.ConnectionString;
             var connection = new SqlConnection(connectionString);
             connection.Open();
-            string sql = "select Sum(subcount) as times, Sum(sub_amount) as amount from Totals where ";
+            string sql = "SELECT\r\n\trecord_id,\r\n\trecord_date, \r\n\tcategory_id, \r\n\tsubcategory_id, \r\n\tsubcount,\r\n\tsubamount\r\nFROM Totals\r\nWHERE ";
             int count = 0;
             try
             {
                 using(var command = new SqlCommand(sql, connection))
                 {
+                    if(r.Id > 0)
+                    {
+                        if(count > 0) command.CommandText += " AND ";
+                        command.CommandText += "record_id = @id";
+                        command.Parameters.Add("@id", SqlDbType.Int);
+                        command.Parameters["@id"].Value = r.Id;
+                        count++;
+                    }
                     if (r.Date != DateTime.MinValue)
                     {
                         if(count > 0) command.CommandText += " AND ";
@@ -469,20 +670,126 @@ namespace AccountAPI.DataStorage
                             count++;
                         }
                     }
-                    if (r.Amount > 0)
+                    if(count == 0) throw new ArgumentException("Invalid argument for search.");
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            RecordForm record = new RecordForm
+                            {
+                                Id = Convert.ToInt32(reader["record_id"]),
+                                Date = Convert.ToDateTime(reader["record_date"]),
+                                Category_id = Convert.ToInt32(reader["category_id"]),
+                                SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
+                                SubCount = Convert.ToInt32(reader["subcount"]),
+                                SubAmount = Convert.ToInt32(reader["subamount"])
+                            };
+                            totals.Add(record);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("GetTotals failed." + e.Message);
+            }
+            return totals;
+        }
+
+        public List<RecordForm> GetTotals(RecordForm r1, RecordForm r2)
+        {
+            List<RecordForm> totals = new List<RecordForm>();
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "MSI";
+            builder.InitialCatalog = "Cash";
+            builder.UserID = "Apple";
+            builder.Password = "ApplePen";
+            builder.Encrypt = true;
+            builder.TrustServerCertificate = true;
+
+            string connectionString = builder.ConnectionString;
+            var connection = new SqlConnection(connectionString);
+            connection.Open();
+            string sql = "SELECT\r\n\trecord_id,\r\n\trecord_date, \r\n\tcategory_id, \r\n\tsubcategory_id, \r\n\tsubcount,\r\n\tsubamount\r\nFROM Totals\r\nWHERE ";
+            int count = 0;
+            try
+            {
+                using (var command = new SqlCommand(sql, connection))
+                {
+                    if(r1.Id > 0 && r2.Id > 0)
+                    {
+                        if(count > 0) command.CommandText += " AND ";
+                        command.CommandText += "record_id BETWEEN @id AND @id2";
+                        command.Parameters.Add("@id", SqlDbType.Int);
+                        command.Parameters["@id"].Value = r1.Id;
+                        command.Parameters.Add("@id2", SqlDbType.Int);
+                        command.Parameters["@id2"].Value = r2.Id;
+                        count++;
+                    }
+                    if (r1.Date > DateTime.MinValue.Date && r2.Date >= r1.Date)
                     {
                         if (count > 0) command.CommandText += " AND ";
-                        command.CommandText += "subamount = @amount";
+                        command.CommandText += "R.record_date BETWEEN @date AND @date2";
+                        command.Parameters.Add("@date", SqlDbType.Date);
+                        command.Parameters["@date"].Value = r1.Date.Date;
+                        command.Parameters.Add("@date2", SqlDbType.Date);
+                        command.Parameters["@date2"].Value = r2.Date.Date;
+                        count++;
+                    }
+                    if (r1.Category_id > 0 && r2.Category_id > 0)
+                    {
+                        if (count > 0) command.CommandText += " AND ";
+                        command.CommandText += "R.category_id BETWEEN @cid AND @cid2";
+                        command.Parameters.Add("@cid", SqlDbType.Int);
+                        command.Parameters["@cid"].Value = r1.Category_id;
+                        command.Parameters.Add("@cid2", SqlDbType.Int);
+                        command.Parameters["@cid2"].Value = r2.Category_id;
+                        count++;
+                        if (r1.SubCategory_id > 0 && r2.SubCategory_id > 0)
+                        {
+                            if (count > 0) command.CommandText += " AND ";
+                            command.CommandText += "R.subcategory_id BETWEEN @sid AND @sid2";
+                            command.Parameters.Add("@sid", SqlDbType.Int);
+                            command.Parameters["@sid"].Value = r1.SubCategory_id;
+                            command.Parameters.Add("@sid2", SqlDbType.Int);
+                            command.Parameters["@sid2"].Value = r2.SubCategory_id;
+                            count++;
+                        }
+                    }
+                    if(r1.SubCount > 0 && r2.SubCount > 0)
+                    {
+                        if (count > 0) command.CommandText += " AND ";
+                        command.CommandText += "subcount BETWEEN @subcount AND @subcount2";
+                        command.Parameters.Add("@subcount", SqlDbType.Int);
+                        command.Parameters["@subcount"].Value = r1.SubCount;
+                        command.Parameters.Add("@subcount2", SqlDbType.Int);
+                        command.Parameters["@subcount2"].Value = r2.SubCount;
+                        count++;
+                    }
+                    if (r1.Amount > 0 && r2.Amount > 0)
+                    {
+                        if (count > 0) command.CommandText += " AND ";
+                        command.CommandText += "subamount BETWEEN @amount AND @amount2";
                         command.Parameters.Add("@amount", SqlDbType.Int);
-                        command.Parameters["@amount"].Value = r.Amount;
+                        command.Parameters["@amount"].Value = r1.Amount;
+                        command.Parameters.Add("@amount2", SqlDbType.Int);
+                        command.Parameters["@amount2"].Value = r2.Amount;
                         count++;
                     }
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        if (reader.Read())
+                        while (reader.Read())
                         {
-                            totals.SubCount = Convert.ToInt32(reader["times"]);
-                            totals.SubAmount = Convert.ToInt32(reader["amount"]);
+                            RecordForm record = new RecordForm
+                            {
+                                Id = Convert.ToInt32(reader["record_id"]),
+                                Date = Convert.ToDateTime(reader["record_date"]),
+                                Category_id = Convert.ToInt32(reader["category_id"]),
+                                SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
+                                SubCount = Convert.ToInt32(reader["subcount"]),
+                                SubAmount = Convert.ToInt32(reader["subamount"])
+                            };
+                            totals.Add(record);
                         }
                     }
                 }

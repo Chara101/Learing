@@ -453,6 +453,44 @@
         "tags": [
           "WiseTest"
         ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/WiseTest/search/GetTotalsBy": {
+      "post": {
+        "tags": [
+          "WiseTest"
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -478,17 +516,83 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/RecordForm"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RecordForm"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RecordForm"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/WiseTest/search/GetTotalsInRange": {
+      "post": {
+        "tags": [
+          "WiseTest"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BandRecord"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BandRecord"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BandRecord"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordForm"
+                  }
                 }
               }
             }

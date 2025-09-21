@@ -45,10 +45,24 @@ namespace AccountAPI.Controllers
         }
 
         [HttpPost("search/GetTotals")]
-        public RecordForm GetTotals([FromBody] RecordForm r)
+        public List<RecordForm> GetTotals()
         {
-            RecordForm result = new RecordForm();
+            List<RecordForm> result = new List<RecordForm>();
+            result = _db.GetAllTotals();
+            return result;
+        }
+        [HttpPost("search/GetTotalsBy")]
+        public List<RecordForm> GetTotalsBy([FromBody] RecordForm r)
+        {
+            List<RecordForm> result = new List<RecordForm>();
             result = _db.GetTotals(r);
+            return result;
+        }
+        [HttpPost("search/GetTotalsInRange")]
+        public List<RecordForm> GetTotalsInRange([FromBody] BandRecord r)
+        {
+            List<RecordForm> result = new List<RecordForm>();
+            result = _db.GetTotals(r.r1, r.r2);
             return result;
         }
 
