@@ -142,22 +142,13 @@ namespace AccountAPI.DataStorage
                 string connectionString = builder.ConnectionString;
                 using var connection = new SqlConnection(connectionString);
                 connection.Open();
-                string sql = "insert into SubCategoryList (category_id, subcategory_name) values ( @cid, @name);";
+                string sql = "INSERT INTO SubCategoryList\r\n (subcategory_name)\r\n VALUES ( @name ) ;\r\n\r\nINSERT INTO CategoryWithSubcategory \r\n\t(category_id, subcategory_id) \r\nVALUES ( @cid, (SELECT TOP 1 \r\n\tsubcategory_id\r\n\tFROM SubCategoryList\r\n\tORDER BY subcategory_id DESC\r\n))";
                 using (SqlCommand command = new SqlCommand(sql, connection))
                 {
                     command.Parameters.Add("@cid", SqlDbType.Int);
                     command.Parameters.Add("@name", SqlDbType.NVarChar, 50);
                     command.Parameters["@cid"].Value = category_id;
                     command.Parameters["@name"].Value = name;
-                    command.ExecuteNonQuery();
-                }
-                sql = "INSERT INTO CategoryWithSubcategory (category_id, subcategory_id) values (@cid, @sid)";
-                using (SqlCommand command = new SqlCommand(sql, connection))
-                {
-                    command.Parameters.Add("@cid", SqlDbType.Int);
-                    command.Parameters.Add("@sid", SqlDbType.Int);
-                    command.Parameters["@cid"].Value = category_id;
-                    command.Parameters["@sid"].Value = name;
                     command.ExecuteNonQuery();
                 }
             }

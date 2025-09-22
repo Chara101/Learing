@@ -84,5 +84,29 @@ namespace AccountAPI.Controllers
         {
             _db.Remove(new RecordForm() { Id = id });
         }
+
+        [HttpPost("Category/add")]
+        public void AddCategory([FromBody] string name)
+        {
+            _db.AddCategory(name);
+        }
+
+        [HttpDelete("Category/delete")]
+        public void DeleteCategory(int id)
+        {
+            _db.RmCategory(id);
+        }
+
+        [HttpPost("SubCategory/add")]
+        public void AddSubCategory([FromBody] RecordForm r)
+        {
+            _db.AddSubCategory(r.Category_id, r.SubCategory);
+        }
+
+        [HttpDelete("SubCategory/delete")]
+        public void DeleteSubCategory(int id)
+        {
+            _db.RmSubCategory(id);
+        }
     }
 }

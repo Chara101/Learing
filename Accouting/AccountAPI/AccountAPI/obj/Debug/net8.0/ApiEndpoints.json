@@ -160,6 +160,50 @@
   },
   {
     "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "AddCategory",
+    "RelativePath": "api/WiseTest/Category/add",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "name",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "DeleteCategory",
+    "RelativePath": "api/WiseTest/Category/delete",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
     "Method": "Delete",
     "RelativePath": "api/WiseTest/delete",
     "HttpMethod": "DELETE",
@@ -373,6 +417,50 @@
           "application/json",
           "text/json"
         ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "AddSubCategory",
+    "RelativePath": "api/WiseTest/SubCategory/add",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "r",
+        "Type": "AccountAPI.Models.RecordForm",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "DeleteSubCategory",
+    "RelativePath": "api/WiseTest/SubCategory/delete",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
         "StatusCode": 200
       }
     ]
