@@ -204,6 +204,46 @@
   },
   {
     "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "GetAllCategories",
+    "RelativePath": "api/WiseTest/Category/getAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[AccountAPI.Models.RecordForm, AccountAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "GetAllCategoriesAndSub",
+    "RelativePath": "api/WiseTest/CategoryAndSub/getAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[AccountAPI.Models.RecordForm, AccountAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
     "Method": "Delete",
     "RelativePath": "api/WiseTest/delete",
     "HttpMethod": "DELETE",
@@ -461,6 +501,26 @@
       {
         "Type": "System.Void",
         "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AccountAPI.Controllers.WiseTestController",
+    "Method": "GetAllSubCategories",
+    "RelativePath": "api/WiseTest/SubCategory/getAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[AccountAPI.Models.RecordForm, AccountAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "StatusCode": 200
       }
     ]

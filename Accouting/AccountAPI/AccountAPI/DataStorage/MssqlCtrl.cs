@@ -251,7 +251,7 @@ namespace AccountAPI.DataStorage
                     RmSubCategory(sid);
                 }
                 string sql2 = "DELETE FROM CategoryList \r\nWHERE category_id = @cid";
-                using(SqlCommand command = new SqlCommand(sql, connection))
+                using(SqlCommand command = new SqlCommand(sql2, connection))
                 {
                     command.Parameters.Add("@cid", SqlDbType.Int);
                     command.Parameters["@cid"].Value = id;
@@ -790,6 +790,126 @@ namespace AccountAPI.DataStorage
                 Console.WriteLine("GetTotals failed." + e.Message);
             }
             return totals;
+        }
+        public List<RecordForm> GetAllCategories()
+        {
+            List<RecordForm> result = new List<RecordForm>();
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                string sql = "SELECT category_id, category_name FROM CategoryList";
+                using(SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    using(SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            RecordForm record = new RecordForm
+                            {
+                                Category_id = Convert.ToInt32(reader["category_id"]),
+                                Category = reader["category_name"].ToString() ?? ""
+                            };
+                            result.Add(record);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("GetAllCategories failed." + e.Message);
+            }
+            return result;
+        }
+        public List<RecordForm> GetAllSubCategories()
+        {
+            List<RecordForm> result = new List<RecordForm>();
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                string sql = "SELECT subcategory_id, subcategory_name FROM SubCategoryList";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            RecordForm record = new RecordForm
+                            {
+                                Category_id = Convert.ToInt32(reader["subcategory_id"]),
+                                Category = reader["subcategory_name"].ToString() ?? ""
+                            };
+                            result.Add(record);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("GetAllCategories failed." + e.Message);
+            }
+            return result;
+        }
+        public List<RecordForm> GetAllCategoriesAndSub()
+        {
+            List<RecordForm> result = new List<RecordForm>();
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "MSI";
+                builder.InitialCatalog = "Cash";
+                builder.UserID = "Apple";
+                builder.Password = "ApplePen";
+                builder.Encrypt = true;
+                builder.TrustServerCertificate = true;
+
+                string connectionString = builder.ConnectionString;
+                using var connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                string sql = "SELECT TOP (1000) [category_id]\r\n      ,[subcategory_id]\r\n  FROM [Cash].[dbo].[CategoryWithSubcategory]";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            RecordForm record = new RecordForm
+                            {
+                                Category_id = Convert.ToInt32(reader["category_id"]),
+                                SubCategory_id = Convert.ToInt32(reader["subcategory_id"])
+                            };
+                            result.Add(record);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("GetAllCategories failed." + e.Message);
+            }
+            return result;
         }
         public void Update(RecordForm r, RecordForm content)
         {

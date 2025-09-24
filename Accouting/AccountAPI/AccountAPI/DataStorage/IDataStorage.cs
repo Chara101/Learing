@@ -22,6 +22,9 @@ namespace TestAcounting.DataStorage
         List<RecordForm> GetAllTotals();
         List<RecordForm> GetTotals(RecordForm r);
         List<RecordForm> GetTotals(RecordForm r1, RecordForm r2);
+        List<RecordForm> GetAllCategories();
+        List<RecordForm> GetAllSubCategories();
+        List<RecordForm> GetAllCategoriesAndSub();
         void Update(RecordForm tartget, RecordForm content);
     }
 }

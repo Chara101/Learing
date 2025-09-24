@@ -108,5 +108,27 @@ namespace AccountAPI.Controllers
         {
             _db.RmSubCategory(id);
         }
+
+        [HttpGet("Category/getAll")]
+        public IEnumerable<RecordForm> GetAllCategories()
+        {
+            List<RecordForm> result = new List<RecordForm>();
+            result = _db.GetAllCategories();
+            return result;
+        }
+        [HttpGet("SubCategory/getAll")]
+        public IEnumerable<RecordForm> GetAllSubCategories()
+        {
+            List<RecordForm> result = new List<RecordForm>();
+            result = _db.GetAllSubCategories();
+            return result;
+        }
+        [HttpGet("CategoryAndSub/getAll")]
+        public IEnumerable<RecordForm> GetAllCategoriesAndSub()
+        {
+            List<RecordForm> result = new List<RecordForm>();
+            result = _db.GetAllCategoriesAndSub();
+            return result;
+        }
     }
 }
