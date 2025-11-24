@@ -448,8 +448,8 @@
         }
       }
     },
-    "/api/WiseTest/search/GetTotals": {
-      "post": {
+    "/api/WiseTest/search/GetAllTotals": {
+      "get": {
         "tags": [
           "WiseTest"
         ],

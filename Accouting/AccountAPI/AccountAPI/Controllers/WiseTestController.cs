@@ -44,7 +44,7 @@ namespace AccountAPI.Controllers
             return result;
         }
 
-        [HttpPost("search/GetTotals")]
+        [HttpGet("search/GetAllTotals")]
         public List<RecordForm> GetTotals()
         {
             List<RecordForm> result = new List<RecordForm>();

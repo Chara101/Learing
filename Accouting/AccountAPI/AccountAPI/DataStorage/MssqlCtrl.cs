@@ -80,15 +80,17 @@ namespace AccountAPI.DataStorage
                 string connectionString = builder.ConnectionString;
                 using var connection = new SqlConnection(connectionString);
                 connection.Open();
-                string sql = "insert into Record (category_id, subcategory_id, record_amount, description) values ( @cid, @scid, @amount, @comment);";
+                string sql = "insert into Record (category_id, subcategory_id, user_id, record_amount, description) values ( @cid, @scid, @uid, @amount, @comment);";
                 using(SqlCommand command = new SqlCommand(sql, connection))
                 {
                     command.Parameters.Add("@cid", SqlDbType.Int);
                     command.Parameters.Add("@scid", SqlDbType.Int);
+                    command.Parameters.Add("@uid", SqlDbType.Int);
                     command.Parameters.Add("@amount", SqlDbType.Int);
                     command.Parameters.Add("@comment", SqlDbType.NVarChar, 50);
                     command.Parameters["@cid"].Value = r.Category_id;
                     command.Parameters["@scid"].Value = r.SubCategory_id;
+                    command.Parameters["@uid"].Value = r.User_id;
                     command.Parameters["@amount"].Value = r.Amount;
                     command.Parameters["@comment"].Value = string.IsNullOrEmpty(r.Comment) ? "nothing" : r.Comment;
                     command.ExecuteNonQuery();
@@ -310,7 +312,8 @@ namespace AccountAPI.DataStorage
                 using var connection = new SqlConnection(connectionString);
                 connection.Open();
 
-                string sql = "SELECT record_id, record_date, category_id, subcategory_id, record_amount, description FROM Record";
+                string sql = "SELECT record_id, record_date, R.category_id, C.category_name, R.subcategory_id, S.subcategory_name, record_amount, description FROM Record R\r\n" +
+                    "INNER JOIN CategoryList C ON C.category_id = R.category_id\r\nINNER JOIN SubCategoryList S on S.subcategory_id = R.subcategory_id";
                 SqlCommand command = new SqlCommand(sql, connection);
 
                 SqlDataReader reader = command.ExecuteReader();
@@ -338,7 +341,9 @@ namespace AccountAPI.DataStorage
                             Id = Convert.ToInt32(reader["record_id"]),
                             Date = Convert.ToDateTime(reader["record_date"]),
                             Category_id = Convert.ToInt32(reader["category_id"]),
+                            Category = reader["category_name"].ToString() ?? string.Empty,
                             SubCategory_id = Convert.ToInt32(reader["subcategory_id"]),
+                            SubCategory = reader["subcategory_name"].ToString() ?? string.Empty,
                             Amount = Convert.ToInt32(reader["record_amount"]),
                             Comment = reader["description"].ToString() ?? string.Empty
                         };
