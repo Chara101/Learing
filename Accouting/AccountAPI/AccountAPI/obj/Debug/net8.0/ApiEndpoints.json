@@ -366,9 +366,64 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "r",
-        "Type": "AccountAPI.Models.RecordForm",
-        "IsRequired": true
+        "Name": "Id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Date",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "Category_id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Category",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SubCategory_id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "SubCategory",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "User_id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "User_name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Amount",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "SubCount",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "SubAmount",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Comment",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": [

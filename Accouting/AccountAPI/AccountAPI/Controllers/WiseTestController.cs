@@ -28,8 +28,8 @@ namespace AccountAPI.Controllers
             return "Login Success";
         }
 
-        [HttpPost("search/GetRecord")]
-        public IEnumerable<RecordForm> GetRecord([FromBody] RecordForm r)
+        [HttpGet("search/GetRecord")]
+        public IEnumerable<RecordForm> GetRecord([FromQuery] RecordForm r)
         {
             List<RecordForm> result = new List<RecordForm>();
             result = _db.GetRecordsBy(r);
